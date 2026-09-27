@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Бюджет</title>
+  <title>Бюджет & Капитал</title>
   <!-- Telegram WebApp SDK & Chart.js -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -28,6 +28,92 @@
 
     .month-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
     .month-bar input[type="month"] { background: rgba(0,0,0,0.25); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; outline: none; }
+
+    /* Главный блок капитала */
+    .total-balance-box {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(30, 41, 59, 0.7) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .balance-header {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .balance-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .balance-amount {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    /* Бейдж-чип с точной суммой плюса/минуса */
+    .delta-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-plus {
+      background: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+      border-color: rgba(34, 197, 94, 0.35);
+    }
+
+    .badge-minus {
+      background: rgba(239, 68, 68, 0.18);
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+
+    .badge-zero {
+      background: rgba(148, 163, 184, 0.15);
+      color: var(--text-muted);
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+
+    .start-balance-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(0,0,0,0.18);
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .start-balance-row label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      flex: 1;
+      margin: 0;
+    }
+
+    .start-balance-row input {
+      width: 130px;
+      padding: 6px 8px;
+      font-size: 0.9rem;
+    }
 
     .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .metric-card { background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
@@ -65,16 +151,34 @@
         <strong>Период</strong>
         <input type="month" id="selectedMonth">
       </div>
+
+      <!-- Главный блок капитала с точной дельтой -->
+      <div class="total-balance-box">
+        <div class="balance-header">Общий баланс средств</div>
+        <div class="balance-row">
+          <div class="balance-amount" id="dispTotalCapital">0 ₽</div>
+          <div class="delta-badge badge-zero" id="deltaBadge">0 ₽</div>
+        </div>
+      </div>
+
+      <!-- Ввод остатка на начало месяца -->
+      <div class="start-balance-row">
+        <label for="startBalanceInput">На начало месяца (₽):</label>
+        <input type="number" id="startBalanceInput" placeholder="0" min="0">
+        <button type="button" class="btn-primary" style="width: auto; padding: 6px 14px;" onclick="saveStartBalance()">ОК</button>
+      </div>
+
       <div id="budgetAlert" class="alert-banner"></div>
+
       <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-title">Доходы</div><div class="metric-value text-green" id="dispIncome">0 ₽</div></div>
-        <div class="metric-card"><div class="metric-title">Расходы</div><div class="metric-value text-red" id="dispExpenses">0 ₽</div></div>
-        <div class="metric-card"><div class="metric-title">Остаток</div><div class="metric-value text-blue" id="dispBalance">0 ₽</div></div>
+        <div class="metric-card"><div class="metric-title">Доходы за месяц</div><div class="metric-value text-green" id="dispIncome">0 ₽</div></div>
+        <div class="metric-card"><div class="metric-title">Траты за месяц</div><div class="metric-value text-red" id="dispExpenses">0 ₽</div></div>
+        <div class="metric-card"><div class="metric-title">Свободный остаток</div><div class="metric-value text-blue" id="dispBalance">0 ₽</div></div>
         <div class="metric-card"><div class="metric-title">Расход %</div><div class="metric-value" id="dispPercent">0%</div></div>
       </div>
     </div>
 
-    <!-- Форма расхода -->
+    <!-- Внесение расхода -->
     <div class="card">
       <h3 style="font-size: 1rem; margin-bottom: 10px;">Внести расход</h3>
       <form id="expForm">
@@ -84,14 +188,14 @@
         </div>
         <div class="form-row">
           <div><label>Категория</label><input list="catList" id="expCategory" placeholder="Выбор/своя" required></div>
-          <div><label>Описание</label><input type="text" id="expDesc" placeholder="Такси, кофе..." required></div>
+          <div><label>Описание</label><input type="text" id="expDesc" placeholder="Такси, кафе..." required></div>
         </div>
         <datalist id="catList"><option value="Продукты"><option value="Жилье"><option value="Транспорт"><option value="Развлечения"><option value="Здоровье"></datalist>
         <button type="submit" class="btn-primary" id="expBtn">Записать расход</button>
       </form>
     </div>
 
-    <!-- Форма дохода -->
+    <!-- Внесение дохода -->
     <div class="card">
       <h3 style="font-size: 1rem; margin-bottom: 10px;">Внести доход / Зарплату</h3>
       <form id="incForm">
@@ -110,7 +214,7 @@
     </div>
 
     <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 6px;">Динамика месяцев</h3>
+      <h3 style="font-size: 1rem; margin-bottom: 6px;">Динамика и тенденции</h3>
       <div class="chart-box"><canvas id="trendChart"></canvas></div>
     </div>
 
@@ -121,7 +225,7 @@
   </div>
 
   <script>
-    // ВСТАВЬТЕ СЮДА ВАШ URL ИЗ ШАГА 1
+    // Ваш рабочий URL Google Apps Script вставлен автоматически
     const API_URL = "https://script.google.com/macros/s/AKfycbywEeQmKtOoZSOyjhcVnCtCQbXbH524I2xYs3PNusXUxHlH6Oo9HRakZ5HU4_bwid2WbQ/exec";
 
     const tg = window.Telegram?.WebApp;
@@ -133,7 +237,8 @@
     let state = {
       incomes: [],
       expenses: [],
-      selectedMonth: monthStr
+      selectedMonth: monthStr,
+      startBalances: JSON.parse(localStorage.getItem('budget_start_balances')) || {}
     };
 
     document.getElementById('selectedMonth').value = monthStr;
@@ -144,6 +249,13 @@
     let trendChart = null;
     const formatRub = (n) => new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽';
 
+    function saveStartBalance() {
+      const val = Number(document.getElementById('startBalanceInput').value) || 0;
+      state.startBalances[state.selectedMonth] = val;
+      localStorage.setItem('budget_start_balances', JSON.stringify(state.startBalances));
+      updateUI();
+    }
+
     async function loadData() {
       try {
         const res = await fetch(API_URL);
@@ -152,12 +264,11 @@
         state.expenses = data.expenses || [];
         updateUI();
       } catch (e) {
-        document.getElementById('operationsList').innerHTML = `<li style="color:var(--danger)">Ошибка загрузки из таблицы. Проверьте URL.</li>`;
+        document.getElementById('operationsList').innerHTML = `<li style="color:var(--danger)">Ошибка загрузки из таблицы. Проверьте подключение.</li>`;
       }
     }
 
     async function sendData(payload) {
-      // Отправка через text/plain для обхода CORS preflight в Google Scripts
       await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify(payload),
@@ -172,20 +283,43 @@
 
       const totalInc = incomes.reduce((s, i) => s + i.amount, 0);
       const totalExp = expenses.reduce((s, e) => s + e.amount, 0);
-      const balance = totalInc - totalExp;
-      const spentPercent = totalInc > 0 ? (totalExp / totalInc) * 100 : 0;
+      const netMonth = totalInc - totalExp;
 
+      // Стартовый капитал
+      const startCapital = state.startBalances[state.selectedMonth] || 0;
+      document.getElementById('startBalanceInput').value = startCapital || '';
+
+      // Общая сумма средств
+      const currentCapital = startCapital + netMonth;
+      document.getElementById('dispTotalCapital').textContent = formatRub(currentCapital);
+
+      // Бейдж с точной дельтой (плюс/минус)
+      const badge = document.getElementById('deltaBadge');
+      if (netMonth > 0) {
+        badge.className = 'delta-badge badge-plus';
+        badge.textContent = `+${formatRub(netMonth)}`;
+      } else if (netMonth < 0) {
+        badge.className = 'delta-badge badge-minus';
+        badge.textContent = `-${formatRub(Math.abs(netMonth))}`;
+      } else {
+        badge.className = 'delta-badge badge-zero';
+        badge.textContent = '0 ₽';
+      }
+
+      // Метрики
+      const spentPercent = totalInc > 0 ? (totalExp / totalInc) * 100 : 0;
       document.getElementById('dispIncome').textContent = formatRub(totalInc);
       document.getElementById('dispExpenses').textContent = formatRub(totalExp);
-      document.getElementById('dispBalance').textContent = formatRub(balance);
+      document.getElementById('dispBalance').textContent = formatRub(netMonth);
       document.getElementById('dispPercent').textContent = Math.round(spentPercent) + '%';
 
+      // Предупреждение
       const alert = document.getElementById('budgetAlert');
       alert.className = 'alert-banner';
       if (totalInc > 0) {
         if (totalExp >= totalInc) {
           alert.classList.add('alert-danger');
-          alert.textContent = `Внимание! Расходы превысили доход на ${formatRub(totalExp - totalInc)}!`;
+          alert.textContent = `Внимание! Траты превысили доходы месяца на ${formatRub(totalExp - totalInc)}!`;
         } else if (spentPercent >= 80) {
           alert.classList.add('alert-warning');
           alert.textContent = `Осторожно! Израсходовано ${Math.round(spentPercent)}% доходов за месяц!`;
@@ -226,13 +360,13 @@
     }
 
     window.deleteRecord = async function(type, index) {
-      if (confirm('Удалить эту строку?')) {
+      if (confirm('Удалить эту операцию?')) {
         await sendData({ action: "delete_item", type, index });
       }
     };
 
     function renderCharts(monthExpenses) {
-      // Круговая
+      // 1. Круговая диаграмма по категориям
       const catTotals = {};
       monthExpenses.forEach(e => catTotals[e.category] = (catTotals[e.category] || 0) + e.amount);
       const ctx1 = document.getElementById('catChart').getContext('2d');
@@ -241,12 +375,12 @@
         type: 'doughnut',
         data: {
           labels: Object.keys(catTotals),
-          datasets: [{ data: Object.values(catTotals), backgroundColor: ['#38bdf8', '#f43f5e', '#10b981', '#f59e0b', '#a855f7', '#6366f1'] }]
+          datasets: [{ data: Object.values(catTotals), backgroundColor: ['#38bdf8', '#f43f5e', '#10b981', '#f59e0b', '#a855f7', '#ec4899'] }]
         },
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } } }
       });
 
-      // Линейная (тренды)
+      // 2. Линейный график
       const allMonths = [...new Set([...state.incomes.map(i => i.date.slice(0,7)), ...state.expenses.map(e => e.date.slice(0,7))])].sort();
       const incData = allMonths.map(m => state.incomes.filter(i => i.date.startsWith(m)).reduce((s,i) => s + i.amount, 0));
       const expData = allMonths.map(m => state.expenses.filter(e => e.date.startsWith(m)).reduce((s,e) => s + e.amount, 0));
@@ -258,8 +392,8 @@
         data: {
           labels: allMonths,
           datasets: [
-            { label: 'Доход', data: incData, borderColor: '#22c55e', tension: 0.2 },
-            { label: 'Расход', data: expData, borderColor: '#ef4444', tension: 0.2 }
+            { label: 'Доход', data: incData, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', tension: 0.25 },
+            { label: 'Расход', data: expData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.25 }
           ]
         },
         options: {
