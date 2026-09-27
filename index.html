@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Бюджет & Капитал</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Бюджет, Цели & Лимиты</title>
   <!-- Telegram WebApp SDK & Chart.js -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,33 +22,68 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg); color: var(--text); padding: 14px; }
-    .container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+    body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 30px; }
+    .container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+
+    /* Мобильный таб-бар */
+    .tab-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      gap: 4px;
+      position: sticky;
+      top: 6px;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 9px 4px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
 
     /* Панель периода и статуса сети */
-    .month-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .month-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .month-controls { display: flex; align-items: center; gap: 8px; }
-    .month-bar input[type="month"] { background: rgba(0,0,0,0.25); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; outline: none; }
+    .month-bar input[type="month"] { background: rgba(0,0,0,0.25); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; outline: none; font-size: 0.9rem; }
 
     .sync-status {
       font-size: 0.75rem;
-      padding: 4px 8px;
-      border-radius: 12px;
+      padding: 4px 10px;
+      border-radius: 14px;
       background: rgba(0, 0, 0, 0.25);
       border: 1px solid var(--border);
       color: var(--text-muted);
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      transition: all 0.2s;
     }
 
     /* Главный блок капитала */
     .total-balance-box {
-      background: linear-gradient(135deg, rgba(56, 189, 248, 0.08) 0%, rgba(30, 41, 59, 0.7) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(30, 41, 59, 0.7) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 14px;
       padding: 16px;
       margin-bottom: 12px;
       display: flex;
@@ -56,241 +91,282 @@
       gap: 8px;
     }
 
-    .balance-header { font-size: 0.85rem; color: var(--text-muted); }
-    .balance-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
-    .balance-amount { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.5px; }
+    .balance-header { font-size: 0.82rem; color: var(--text-muted); }
+    .balance-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .balance-amount { font-size: 1.8rem; font-weight: 800; letter-spacing: -0.5px; }
 
-    /* Бейдж точной дельты */
     .delta-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 700;
-      letter-spacing: 0.2px;
-      border: 1px solid transparent;
       white-space: nowrap;
     }
-
-    .badge-plus { background: rgba(34, 197, 94, 0.18); color: #4ade80; border-color: rgba(34, 197, 94, 0.35); }
-    .badge-minus { background: rgba(239, 68, 68, 0.18); color: #f87171; border-color: rgba(239, 68, 68, 0.35); }
-    .badge-zero { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); border-color: rgba(148, 163, 184, 0.25); }
+    .badge-plus { background: rgba(34, 197, 94, 0.18); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.35); }
+    .badge-minus { background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); }
+    .badge-zero { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); border: 1px solid rgba(148, 163, 184, 0.25); }
 
     .start-balance-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       background: rgba(0,0,0,0.18);
-      padding: 10px 12px;
-      border-radius: 8px;
+      padding: 9px 12px;
+      border-radius: 10px;
       border: 1px solid var(--border);
       margin-bottom: 12px;
     }
+    .start-balance-row label { font-size: 0.8rem; color: var(--text-muted); flex: 1; }
+    .start-balance-row input { width: 110px; padding: 6px 8px; font-size: 0.9rem; }
 
-    .start-balance-row label { font-size: 0.8rem; color: var(--text-muted); flex: 1; margin: 0; }
-    .start-balance-row input { width: 130px; padding: 6px 8px; font-size: 0.9rem; }
-
-    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .metric-card { background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 10px; border: 1px solid var(--border); }
-    .metric-title { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .metric-card { background: rgba(255, 255, 255, 0.03); padding: 12px; border-radius: 12px; border: 1px solid var(--border); }
+    .metric-title { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 3px; }
     .metric-value { font-size: 1.15rem; font-weight: 700; }
     .text-green { color: var(--success); }
     .text-red { color: var(--danger); }
     .text-blue { color: var(--accent); }
 
-    .alert-banner { display: none; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; font-size: 0.85rem; font-weight: 500; }
+    .alert-banner { display: none; padding: 10px 12px; border-radius: 10px; margin-bottom: 12px; font-size: 0.82rem; font-weight: 500; }
     .alert-warning { display: block; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid var(--warning); }
     .alert-danger { display: block; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid var(--danger); }
 
-    /* Быстрые чипы категорий */
-    .quick-chips-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 12px;
-    }
-    .quick-chips {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 4px;
-      scrollbar-width: none;
-      flex: 1;
-    }
+    /* Горизонтальный скролл чипов */
+    .quick-chips-wrapper { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+    .quick-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; flex: 1; }
     .quick-chips::-webkit-scrollbar { display: none; }
     .chip-btn {
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 6px 12px;
+      padding: 7px 12px;
       font-size: 0.8rem;
       color: var(--text);
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.15s ease;
     }
-    .chip-btn:active {
-      background: var(--accent);
-      color: var(--btn-text);
-      transform: scale(0.95);
-    }
+    .chip-btn:active { background: var(--accent); color: var(--btn-text); transform: scale(0.96); }
     .chip-add-btn {
-      background: rgba(56, 189, 248, 0.15);
+      background: rgba(56, 189, 248, 0.12);
       border: 1px dashed var(--accent);
       color: var(--accent);
       font-weight: 700;
       border-radius: 16px;
-      padding: 6px 12px;
-      font-size: 0.85rem;
+      padding: 7px 12px;
+      font-size: 0.8rem;
       cursor: pointer;
       white-space: nowrap;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s ease;
     }
-    .chip-add-btn:active {
-      transform: scale(0.92);
-      background: var(--accent);
-      color: var(--btn-text);
+
+    /* Блок быстрых регулярных платежей */
+    .template-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .template-scroll::-webkit-scrollbar { display: none; }
+    .template-card {
+      flex: 0 0 auto;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-width: 125px;
+      cursor: pointer;
     }
+    .template-card:active { transform: scale(0.96); background: rgba(56, 189, 248, 0.1); }
+    .template-title { font-size: 0.82rem; font-weight: 600; margin-bottom: 2px; }
+    .template-amount { font-size: 0.95rem; font-weight: 700; color: #f87171; }
+
+    /* Прогресс-бары целей и лимитов */
+    .goal-card, .limit-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .bar-bg { background: rgba(0,0,0,0.3); border-radius: 10px; height: 8px; width: 100%; overflow: hidden; margin: 8px 0; }
+    .bar-fill { height: 100%; border-radius: 10px; transition: width 0.3s ease; }
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
     .form-group { margin-bottom: 10px; }
-    label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
-    input { width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: var(--text); font-size: 0.9rem; outline: none; }
+    label { display: block; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; }
+    input { width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 10px; padding: 10px; color: var(--text); font-size: 0.95rem; outline: none; }
     
-    button.btn-primary { background: var(--accent); color: var(--btn-text); font-weight: 600; border: none; border-radius: 8px; padding: 10px; width: 100%; cursor: pointer; transition: opacity 0.15s; }
-    button.btn-primary:active { opacity: 0.85; }
-
-    .btn-reset {
-      background: transparent;
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      border-radius: 8px;
-      padding: 10px;
-      width: 100%;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .btn-reset:hover { background: rgba(239, 68, 68, 0.1); }
+    button.btn-primary { background: var(--accent); color: var(--btn-text); font-weight: 700; border: none; border-radius: 10px; padding: 11px; width: 100%; cursor: pointer; font-size: 0.95rem; }
+    button.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
 
     .chart-box { position: relative; width: 100%; height: 240px; margin-top: 6px; }
 
-    .item-list { list-style: none; max-height: 280px; overflow-y: auto; margin-top: 10px; }
-    .record-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .item-list { list-style: none; max-height: 380px; overflow-y: auto; margin-top: 10px; }
+    .record-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     .record-item:last-child { border-bottom: none; }
     .item-cat { font-size: 0.7rem; background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; margin-left: 6px; text-transform: uppercase; }
-    .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px; font-size: 1rem; }
+    .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; padding: 6px 10px; font-size: 1.1rem; }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: flex; flex-direction: column; gap: 12px; }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="card">
-      <div class="month-bar">
-        <div class="month-controls">
-          <strong>Период</strong>
-          <input type="month" id="selectedMonth">
-        </div>
-        <div class="sync-status" id="syncStatus">🟢 В облаке</div>
-      </div>
-
-      <!-- Главный блок капитала -->
-      <div class="total-balance-box">
-        <div class="balance-header">Общий баланс средств</div>
-        <div class="balance-row">
-          <div class="balance-amount" id="dispTotalCapital">0 ₽</div>
-          <div class="delta-badge badge-zero" id="deltaBadge">0 ₽</div>
-        </div>
-      </div>
-
-      <!-- Ввод остатка на начало месяца -->
-      <div class="start-balance-row">
-        <label for="startBalanceInput">На начало месяца (₽):</label>
-        <input type="number" id="startBalanceInput" placeholder="0" min="0">
-        <button type="button" class="btn-primary" style="width: auto; padding: 6px 14px;" onclick="saveStartBalance()">ОК</button>
-      </div>
-
-      <div id="budgetAlert" class="alert-banner"></div>
-
-      <div class="metrics-grid">
-        <div class="metric-card"><div class="metric-title">Доходы за месяц</div><div class="metric-value text-green" id="dispIncome">0 ₽</div></div>
-        <div class="metric-card"><div class="metric-title">Траты за месяц</div><div class="metric-value text-red" id="dispExpenses">0 ₽</div></div>
-        <div class="metric-card"><div class="metric-title">Свободный остаток</div><div class="metric-value text-blue" id="dispBalance">0 ₽</div></div>
-        <div class="metric-card"><div class="metric-title">Расход %</div><div class="metric-value" id="dispPercent">0%</div></div>
-      </div>
+    
+    <!-- Мобильная панель переключения разделов -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('tab-main', this)">💳 Учёт</button>
+      <button class="tab-btn" onclick="switchTab('tab-goals', this)">🎯 Цели & Лимиты</button>
+      <button class="tab-btn" onclick="switchTab('tab-analytics', this)">📊 Аналитика</button>
     </div>
 
-    <!-- Внесение расхода с быстрыми чипами и кнопкой добавления новых -->
-    <div class="card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <h3 style="font-size: 1rem;">Внести расход</h3>
-        <span style="font-size: 0.72rem; color: var(--text-muted);">Зажмите чип для удаления</span>
-      </div>
-
-      <!-- Лента чипов с плюсиком -->
-      <div class="quick-chips-wrapper">
-        <div class="quick-chips" id="chipsContainer"></div>
-        <button type="button" class="chip-add-btn" onclick="promptAddNewCategory()" title="Добавить новую категорию">+ Новая</button>
-      </div>
-
-      <form id="expForm">
-        <div class="form-row">
-          <div>
-            <label>Сумма (₽) или калькулятор</label>
-            <input type="text" id="expAmount" placeholder="350 или 200+150" required inputmode="numeric">
+    <!-- ==================== ТАБ 1: УЧЁТ ==================== -->
+    <div id="tab-main" class="tab-content active">
+      
+      <div class="card">
+        <div class="month-bar">
+          <div class="month-controls">
+            <strong>Период</strong>
+            <input type="month" id="selectedMonth">
           </div>
-          <div><label>Дата</label><input type="date" id="expDate" required></div>
+          <div class="sync-status" id="syncStatus">🟢 В облаке</div>
         </div>
-        <div class="form-row">
-          <div><label>Категория</label><input list="catList" id="expCategory" placeholder="Выбор/своя" required></div>
-          <div><label>Описание</label><input type="text" id="expDesc" placeholder="Такси, кафе..." required></div>
+
+        <div class="total-balance-box">
+          <div class="balance-header">Общий баланс средств</div>
+          <div class="balance-row">
+            <div class="balance-amount" id="dispTotalCapital">0 ₽</div>
+            <div class="delta-badge badge-zero" id="deltaBadge">0 ₽</div>
+          </div>
         </div>
-        <datalist id="catList"></datalist>
-        <button type="submit" class="btn-primary" id="expBtn">Записать расход</button>
-      </form>
-    </div>
 
-    <!-- Внесение дохода -->
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 10px;">Внести доход / Зарплату</h3>
-      <form id="incForm">
-        <div class="form-row">
-          <div><label>Сумма (₽)</label><input type="text" id="incAmount" placeholder="50000" required inputmode="numeric"></div>
-          <div><label>Дата</label><input type="date" id="incDate" required></div>
+        <div class="start-balance-row">
+          <label for="startBalanceInput">На начало месяца (₽):</label>
+          <input type="number" id="startBalanceInput" placeholder="0" min="0">
+          <button type="button" class="btn-primary" style="width: auto; padding: 6px 14px;" onclick="saveStartBalance()">ОК</button>
         </div>
-        <div class="form-group"><label>Источник</label><input type="text" id="incDesc" placeholder="Зарплата, аванс, бонус" required></div>
-        <button type="submit" class="btn-primary" id="incBtn">Записать доход</button>
-      </form>
+
+        <div id="budgetAlert" class="alert-banner"></div>
+
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="metric-title">Доходы за месяц</div><div class="metric-value text-green" id="dispIncome">0 ₽</div></div>
+          <div class="metric-card"><div class="metric-title">Траты за месяц</div><div class="metric-value text-red" id="dispExpenses">0 ₽</div></div>
+          <div class="metric-card"><div class="metric-title">Свободный остаток</div><div class="metric-value text-blue" id="dispBalance">0 ₽</div></div>
+          <div class="metric-card"><div class="metric-title">Расход %</div><div class="metric-value" id="dispPercent">0%</div></div>
+        </div>
+      </div>
+
+      <!-- Быстрые регулярные автоплатежи -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="font-size: 0.95rem;">⚡ Регулярные платежи (в 1 тап)</h3>
+          <button type="button" class="chip-add-btn" onclick="promptAddTemplate()">+ Шаблон</button>
+        </div>
+        <div class="template-scroll" id="templateScroll"></div>
+      </div>
+
+      <!-- Внесение расхода -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="font-size: 0.95rem;">Внести расход</h3>
+          <span style="font-size: 0.7rem; color: var(--text-muted);">Зажмите чип для удаления</span>
+        </div>
+
+        <div class="quick-chips-wrapper">
+          <div class="quick-chips" id="chipsContainer"></div>
+          <button type="button" class="chip-add-btn" onclick="promptAddNewCategory()">+ Новая</button>
+        </div>
+
+        <form id="expForm">
+          <div class="form-row">
+            <div>
+              <label>Сумма (₽) или калькулятор</label>
+              <input type="text" id="expAmount" placeholder="350 или 200+150" required inputmode="numeric">
+            </div>
+            <div><label>Дата</label><input type="date" id="expDate" required></div>
+          </div>
+          <div class="form-row">
+            <div><label>Категория</label><input list="catList" id="expCategory" placeholder="Выбор/своя" required></div>
+            <div><label>Описание</label><input type="text" id="expDesc" placeholder="Такси, кофе..." required></div>
+          </div>
+          <datalist id="catList"></datalist>
+          <button type="submit" class="btn-primary" id="expBtn">Записать расход</button>
+        </form>
+      </div>
+
+      <!-- Внесение дохода -->
+      <div class="card">
+        <h3 style="font-size: 0.95rem; margin-bottom: 10px;">Внести доход / Зарплату</h3>
+        <form id="incForm">
+          <div class="form-row">
+            <div><label>Сумма (₽)</label><input type="text" id="incAmount" placeholder="50000" required inputmode="numeric"></div>
+            <div><label>Дата</label><input type="date" id="incDate" required></div>
+          </div>
+          <div class="form-group"><label>Источник</label><input type="text" id="incDesc" placeholder="Зарплата, аванс, бонус" required></div>
+          <button type="submit" class="btn-primary" id="incBtn">Записать доход</button>
+        </form>
+      </div>
+
     </div>
 
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 6px;">Структура расходов</h3>
-      <div class="chart-box"><canvas id="catChart"></canvas></div>
+    <!-- ==================== ТАБ 2: ЦЕЛИ И ЛИМИТЫ ==================== -->
+    <div id="tab-goals" class="tab-content">
+      
+      <!-- Лимиты по категориям -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div>
+            <h3 style="font-size: 1rem;">Лимиты по категориям</h3>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">Контроль расходов в этом месяце</div>
+          </div>
+          <button type="button" class="chip-add-btn" onclick="promptAddCategoryLimit()">+ Лимит</button>
+        </div>
+        <div id="limitsListContainer"></div>
+      </div>
+
+      <!-- Финансовые копилки / цели -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div>
+            <h3 style="font-size: 1rem;">Финансовые цели (Копилка)</h3>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">Накопления на мечту</div>
+          </div>
+          <button type="button" class="chip-add-btn" onclick="promptAddNewGoal()">+ Цель</button>
+        </div>
+        <div id="goalsListContainer"></div>
+      </div>
+
     </div>
 
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 6px;">Динамика и тенденции</h3>
-      <div class="chart-box"><canvas id="trendChart"></canvas></div>
+    <!-- ==================== ТАБ 3: АНАЛИТИКА И ИСТОРИЯ ==================== -->
+    <div id="tab-analytics" class="tab-content">
+      
+      <div class="card">
+        <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Структура расходов</h3>
+        <div class="chart-box"><canvas id="catChart"></canvas></div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Динамика и тенденции</h3>
+        <div class="chart-box"><canvas id="trendChart"></canvas></div>
+      </div>
+
+      <!-- История с поиском -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="font-size: 0.95rem;">Операции за месяц</h3>
+          <span style="font-size: 0.75rem; color: var(--text-muted);" id="opsCount">0 шт</span>
+        </div>
+        <input type="text" id="searchOpsInput" placeholder="🔍 Поиск по названию или категории..." oninput="filterOperationsList()">
+        <ul class="item-list" id="operationsList">Загрузка данных...</ul>
+      </div>
+
+      <div class="card" style="text-align: center;">
+        <button type="button" style="background:transparent; color:#f87171; border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px; width:100%; font-size:0.85rem; font-weight:600; cursor:pointer;" onclick="confirmResetAll()">
+          🗑 Сбросить все данные приложения
+        </button>
+      </div>
+
     </div>
 
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 8px;">Операции за месяц</h3>
-      <ul class="item-list" id="operationsList">Загрузка данных...</ul>
-    </div>
-
-    <div class="card" style="text-align: center;">
-      <button type="button" class="btn-reset" onclick="confirmResetAll()">
-        🗑 Сбросить все данные (доходы, расходы и баланс)
-      </button>
-    </div>
   </div>
 
   <script>
@@ -306,20 +382,23 @@
       } catch (e) {}
     }
 
-    function hapticSuccess() {
-      try { tg?.HapticFeedback?.notificationOccurred('success'); } catch (e) {}
-    }
-    function hapticLight() {
-      try { tg?.HapticFeedback?.impactOccurred('light'); } catch (e) {}
-    }
-    function hapticWarning() {
-      try { tg?.HapticFeedback?.notificationOccurred('warning'); } catch (e) {}
+    function hapticSuccess() { try { tg?.HapticFeedback?.notificationOccurred('success'); } catch (e) {} }
+    function hapticLight() { try { tg?.HapticFeedback?.impactOccurred('light'); } catch (e) {} }
+    function hapticWarning() { try { tg?.HapticFeedback?.notificationOccurred('warning'); } catch (e) {} }
+
+    // Переключение табов
+    function switchTab(tabId, btn) {
+      hapticLight();
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
     }
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const monthStr = todayStr.slice(0, 7);
 
-    // Начальные дефолтные категории
+    // Категории
     const DEFAULT_CATEGORIES = [
       { name: "Продукты", icon: "🛒" },
       { name: "Кофе", icon: "☕" },
@@ -328,9 +407,23 @@
       { name: "Жилье", icon: "🏠" },
       { name: "Здоровье", icon: "💊" }
     ];
-
-    // Загрузка категорий из локального хранилища
     let savedCategories = JSON.parse(localStorage.getItem('budget_custom_categories')) || DEFAULT_CATEGORIES;
+
+    // Регулярные автоплатежи-шаблоны
+    const DEFAULT_TEMPLATES = [
+      { desc: "Интернет", amount: 650, category: "Жилье" },
+      { desc: "Подписка", amount: 299, category: "Развлечения" },
+      { desc: "Проездной", amount: 1500, category: "Транспорт" }
+    ];
+    let savedTemplates = JSON.parse(localStorage.getItem('budget_templates')) || DEFAULT_TEMPLATES;
+
+    // Лимиты по категориям: { "Развлечения": 15000, "Продукты": 20000 }
+    let savedLimits = JSON.parse(localStorage.getItem('budget_category_limits')) || {};
+
+    // Цели/копилки: [ { title: "Новый ноутбук", target: 90000, current: 25000 } ]
+    let savedGoals = JSON.parse(localStorage.getItem('budget_saving_goals')) || [
+      { title: "Подушка безопасности", target: 100000, current: 35000 }
+    ];
 
     let state = {
       incomes: JSON.parse(localStorage.getItem('budget_cached_incomes')) || [],
@@ -363,7 +456,7 @@
       }
     }
 
-    // Рендер чипов и обновление datalist
+    // ================= РЕНДЕР ЧИПОВ И КАТЕГОРИЙ =================
     function renderCategoryChips() {
       const container = document.getElementById('chipsContainer');
       const datalist = document.getElementById('catList');
@@ -381,22 +474,16 @@
       datalist.innerHTML = savedCategories.map(c => `<option value="${c.name}">`).join('');
     }
 
-    // Добавление новой категории плюсиком
     function promptAddNewCategory() {
       hapticLight();
-      const rawName = prompt("Введите название новой категории (например: Спорт, Подписки, Подарки):");
+      const rawName = prompt("Название новой категории (например: Спорт, Одежда):");
       if (!rawName) return;
-
       const trimmed = rawName.trim();
       if (!trimmed) return;
-
-      // Проверка на дубликат
       if (savedCategories.some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
         alert("Такая категория уже есть!");
         return;
       }
-
-      // Выбираем эмодзи или ставим дефолтный тег
       savedCategories.push({ name: trimmed, icon: "🏷" });
       localStorage.setItem('budget_custom_categories', JSON.stringify(savedCategories));
       renderCategoryChips();
@@ -404,24 +491,14 @@
       hapticSuccess();
     }
 
-    // Удаление категории
     let touchTimer = null;
-    function handleTouchStart(e, idx) {
-      touchTimer = setTimeout(() => {
-        deleteCategoryPrompt(idx);
-      }, 700);
-    }
-    function handleTouchEnd() {
-      if (touchTimer) clearTimeout(touchTimer);
-    }
-    function handleDeleteCategory(e, idx) {
-      e.preventDefault();
-      deleteCategoryPrompt(idx);
-    }
+    function handleTouchStart(e, idx) { touchTimer = setTimeout(() => deleteCategoryPrompt(idx), 700); }
+    function handleTouchEnd() { if (touchTimer) clearTimeout(touchTimer); }
+    function handleDeleteCategory(e, idx) { e.preventDefault(); deleteCategoryPrompt(idx); }
     function deleteCategoryPrompt(idx) {
       hapticWarning();
       const cat = savedCategories[idx];
-      if (confirm(`Удалить категорию «${cat.name}» из быстрых чипов?`)) {
+      if (confirm(`Удалить категорию «${cat.name}»?`)) {
         savedCategories.splice(idx, 1);
         localStorage.setItem('budget_custom_categories', JSON.stringify(savedCategories));
         renderCategoryChips();
@@ -432,27 +509,174 @@
       hapticLight();
       document.getElementById('expCategory').value = category;
       const descInput = document.getElementById('expDesc');
-      if (!descInput.value) {
-        descInput.value = category;
-      }
+      if (!descInput.value) descInput.value = category;
       document.getElementById('expAmount').focus();
     }
 
+    // ================= РЕГУЛЯРНЫЕ ШАБЛОНЫ В 1 ТАП =================
+    function renderTemplates() {
+      const el = document.getElementById('templateScroll');
+      el.innerHTML = savedTemplates.map((t, idx) => `
+        <div class="template-card" onclick="applyTemplate(${idx})">
+          <div class="template-title">${t.desc}</div>
+          <div class="template-amount">-${formatRub(t.amount)}</div>
+        </div>
+      `).join('');
+    }
+
+    function applyTemplate(idx) {
+      hapticSuccess();
+      const t = savedTemplates[idx];
+      state.expenses.push({ amount: t.amount, date: todayStr, category: t.category, desc: t.desc });
+      saveLocalCache();
+      updateUI();
+      syncQueue.push({ action: "add_expense", amount: t.amount, date: todayStr, category: t.category, desc: t.desc });
+      saveLocalCache();
+      scheduleSync();
+    }
+
+    function promptAddTemplate() {
+      hapticLight();
+      const desc = prompt("Название автоплатежа (например: Зал, Spotify, Аренда):");
+      if (!desc) return;
+      const amountStr = prompt("Сумма (₽):");
+      const amount = evalAmountInput(amountStr);
+      if (!amount || amount <= 0) return;
+      const category = prompt("Категория (например: Развлечения, Жилье):") || "Прочее";
+
+      savedTemplates.push({ desc: desc.trim(), amount, category: category.trim() });
+      localStorage.setItem('budget_templates', JSON.stringify(savedTemplates));
+      renderTemplates();
+      hapticSuccess();
+    }
+
+    // ================= ЛИМИТЫ ПО КАТЕГОРИЯМ =================
+    function renderLimits() {
+      const container = document.getElementById('limitsListContainer');
+      const monthExp = state.expenses.filter(e => e.date.startsWith(state.selectedMonth));
+      const catTotals = {};
+      monthExp.forEach(e => catTotals[e.category] = (catTotals[e.category] || 0) + e.amount);
+
+      const keys = Object.keys(savedLimits);
+      if (keys.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:12px;">Лимиты не установлены</div>`;
+        return;
+      }
+
+      container.innerHTML = keys.map(cat => {
+        const limit = savedLimits[cat];
+        const spent = catTotals[cat] || 0;
+        const pct = Math.min(100, Math.round((spent / limit) * 100));
+        let fillColor = 'var(--success)';
+        if (pct >= 90) fillColor = 'var(--danger)';
+        else if (pct >= 75) fillColor = 'var(--warning)';
+
+        return `
+          <div class="limit-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>${cat}</strong>
+              <span style="font-size:0.85rem; font-weight:700;">${formatRub(spent)} / ${formatRub(limit)}</span>
+            </div>
+            <div class="bar-bg">
+              <div class="bar-fill" style="width: ${pct}%; background: ${fillColor};"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:var(--text-muted);">
+              <span>${pct}% израсходовано</span>
+              <span style="color:#f87171; cursor:pointer;" onclick="deleteLimit('${cat}')">Удалить</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function promptAddCategoryLimit() {
+      hapticLight();
+      const cat = prompt("Введите категорию для установки лимита (например: Развлечения, Продукты):");
+      if (!cat) return;
+      const amt = evalAmountInput(prompt(`Лимит на месяц для «${cat}» (₽):`));
+      if (!amt || amt <= 0) return;
+      savedLimits[cat.trim()] = amt;
+      localStorage.setItem('budget_category_limits', JSON.stringify(savedLimits));
+      renderLimits();
+      hapticSuccess();
+    }
+
+    function deleteLimit(cat) {
+      hapticWarning();
+      delete savedLimits[cat];
+      localStorage.setItem('budget_category_limits', JSON.stringify(savedLimits));
+      renderLimits();
+    }
+
+    // ================= ФИНАНСОВЫЕ ЦЕЛИ / КОПИЛКА =================
+    function renderGoals() {
+      const container = document.getElementById('goalsListContainer');
+      if (savedGoals.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding:12px;">Цели не созданы</div>`;
+        return;
+      }
+
+      container.innerHTML = savedGoals.map((g, idx) => {
+        const pct = Math.min(100, Math.round((g.current / g.target) * 100));
+        return `
+          <div class="goal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong>${g.title}</strong>
+              <span style="font-size:0.85rem; font-weight:700; color:var(--accent);">${formatRub(g.current)} / ${formatRub(g.target)}</span>
+            </div>
+            <div class="bar-bg">
+              <div class="bar-fill" style="width: ${pct}%; background: var(--accent);"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.78rem;">
+              <span style="color:var(--text-muted);">${pct}% собрано</span>
+              <div style="display:flex; gap:10px;">
+                <span style="color:var(--success); font-weight:600; cursor:pointer;" onclick="depositGoal(${idx})">+ Отложить</span>
+                <span style="color:var(--danger); cursor:pointer;" onclick="deleteGoal(${idx})">✕</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function promptAddNewGoal() {
+      hapticLight();
+      const title = prompt("Название цели (например: Отпуск, Новый телефон):");
+      if (!title) return;
+      const target = evalAmountInput(prompt("Необходимая сумма (₽):"));
+      if (!target || target <= 0) return;
+      savedGoals.push({ title: title.trim(), target, current: 0 });
+      localStorage.setItem('budget_saving_goals', JSON.stringify(savedGoals));
+      renderGoals();
+      hapticSuccess();
+    }
+
+    function depositGoal(idx) {
+      hapticLight();
+      const amt = evalAmountInput(prompt(`Сколько отложить в цель «${savedGoals[idx].title}» (₽)?`));
+      if (!amt || amt <= 0) return;
+      savedGoals[idx].current += amt;
+      localStorage.setItem('budget_saving_goals', JSON.stringify(savedGoals));
+      renderGoals();
+      hapticSuccess();
+    }
+
+    function deleteGoal(idx) {
+      hapticWarning();
+      if (confirm(`Удалить цель «${savedGoals[idx].title}»?`)) {
+        savedGoals.splice(idx, 1);
+        localStorage.setItem('budget_saving_goals', JSON.stringify(savedGoals));
+        renderGoals();
+      }
+    }
+
+    // ================= СЕТЬ И СОСТОЯНИЕ =================
     function setSyncStatus(type) {
       const el = document.getElementById('syncStatus');
-      if (type === 'synced') {
-        el.innerHTML = '🟢 В облаке';
-        el.style.color = '#4ade80';
-      } else if (type === 'pending') {
-        el.innerHTML = '🟡 Ожидание (3с)...';
-        el.style.color = '#fbbf24';
-      } else if (type === 'syncing') {
-        el.innerHTML = '🔄 Синхронизация...';
-        el.style.color = '#38bdf8';
-      } else if (type === 'error') {
-        el.innerHTML = '🔴 Ошибка сети';
-        el.style.color = '#f87171';
-      }
+      if (type === 'synced') { el.innerHTML = '🟢 В облаке'; el.style.color = '#4ade80'; }
+      else if (type === 'pending') { el.innerHTML = '🟡 Ожидание (3с)...'; el.style.color = '#fbbf24'; }
+      else if (type === 'syncing') { el.innerHTML = '🔄 Синхронизация...'; el.style.color = '#38bdf8'; }
+      else if (type === 'error') { el.innerHTML = '🔴 Ошибка сети'; el.style.color = '#f87171'; }
     }
 
     function saveLocalCache() {
@@ -483,14 +707,12 @@
           syncQueue.shift();
           saveLocalCache();
         } catch (err) {
-          console.error("Сетевая ошибка при отправке:", err);
           setSyncStatus('error');
           isSyncing = false;
           syncTimer = setTimeout(flushSyncQueue, 5000);
           return;
         }
       }
-
       isSyncing = false;
       setSyncStatus('synced');
     }
@@ -562,19 +784,35 @@
         }
       }
 
-      renderList(expenses, incomes);
+      filterOperationsList();
       renderCharts(expenses);
+      renderLimits();
+      renderGoals();
     }
 
-    function renderList(expenses, incomes) {
-      const allOps = [
+    // ================= ПОИСК И СПИСОК ОПЕРАЦИЙ =================
+    function filterOperationsList() {
+      const expenses = state.expenses.filter(e => e.date.startsWith(state.selectedMonth));
+      const incomes = state.incomes.filter(i => i.date.startsWith(state.selectedMonth));
+
+      const query = (document.getElementById('searchOpsInput')?.value || '').toLowerCase().trim();
+
+      let allOps = [
         ...expenses.map((e, idx) => ({ ...e, type: 'expenses', origIdx: idx })),
         ...incomes.map((i, idx) => ({ ...i, type: 'incomes', origIdx: idx }))
       ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
+      if (query) {
+        allOps = allOps.filter(o => 
+          (o.desc && o.desc.toLowerCase().includes(query)) || 
+          (o.category && o.category.toLowerCase().includes(query))
+        );
+      }
+
+      document.getElementById('opsCount').textContent = `${allOps.length} шт`;
       const list = document.getElementById('operationsList');
       if (allOps.length === 0) {
-        list.innerHTML = `<li style="color:var(--text-muted); text-align:center; padding:10px;">Нет записей</li>`;
+        list.innerHTML = `<li style="color:var(--text-muted); text-align:center; padding:12px;">Операции не найдены</li>`;
         return;
       }
 
@@ -586,7 +824,7 @@
             ${item.category ? `<span class="item-cat">${item.category}</span>` : ''}
           </div>
           <div style="display:flex; align-items:center; gap:8px;">
-            <span style="font-weight:600; color: ${item.type === 'expenses' ? 'var(--danger)' : 'var(--success)'}">
+            <span style="font-weight:700; color: ${item.type === 'expenses' ? 'var(--danger)' : 'var(--success)'}">
               ${item.type === 'expenses' ? '-' : '+'}${formatRub(item.amount)}
             </span>
             <button class="btn-del" onclick="deleteRecord('${item.type}', ${item.origIdx})">✕</button>
@@ -598,11 +836,9 @@
     window.deleteRecord = async function(type, index) {
       hapticWarning();
       if (!confirm('Удалить эту операцию?')) return;
-
       state[type].splice(index, 1);
       saveLocalCache();
       updateUI();
-
       syncQueue.push({ action: "delete_item", type, index });
       saveLocalCache();
       scheduleSync();
@@ -610,17 +846,12 @@
 
     async function confirmResetAll() {
       hapticWarning();
-      const confirmed = confirm("ВНИМАНИЕ!\nВы уверены, что хотите полностью стереть все доходы, расходы и сохраненные начальные суммы?\nЭто действие нельзя отменить.");
-      if (!confirmed) return;
-
+      if (!confirm("ВНИМАНИЕ!\nСтереть все доходы, расходы и суммы? Действие необратимо.")) return;
       state.incomes = [];
       state.expenses = [];
       state.startBalances = {};
       syncQueue = [];
-      localStorage.removeItem('budget_cached_incomes');
-      localStorage.removeItem('budget_cached_expenses');
-      localStorage.removeItem('budget_start_balances');
-      localStorage.removeItem('budget_sync_queue');
+      localStorage.clear();
       updateUI();
 
       setSyncStatus('syncing');
@@ -701,9 +932,9 @@
       updateUI();
 
       hapticSuccess();
-
       document.getElementById('expAmount').value = '';
       document.getElementById('expDesc').value = '';
+      document.activeElement.blur(); // Скрываем мобильную клавиатуру
 
       syncQueue.push({ action: "add_expense", amount, date, category, desc });
       saveLocalCache();
@@ -728,21 +959,20 @@
       updateUI();
 
       hapticSuccess();
-
       document.getElementById('incAmount').value = '';
       document.getElementById('incDesc').value = '';
+      document.activeElement.blur();
 
       syncQueue.push({ action: "add_income", amount, date, desc });
       saveLocalCache();
       scheduleSync();
     });
 
-    // Инициализация интерфейса
+    // Инициализация
     renderCategoryChips();
+    renderTemplates();
     updateUI();
-    if (syncQueue.length > 0) {
-      scheduleSync();
-    }
+    if (syncQueue.length > 0) scheduleSync();
     loadData();
   </script>
 </body>
