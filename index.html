@@ -21,7 +21,7 @@
       --border: rgba(255, 255, 255, 0.08);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     body { background-color: var(--bg); color: var(--text); padding: 14px; }
     .container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
@@ -31,7 +31,6 @@
     .month-controls { display: flex; align-items: center; gap: 8px; }
     .month-bar input[type="month"] { background: rgba(0,0,0,0.25); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; outline: none; }
 
-    /* Индикатор сетевого статуса */
     .sync-status {
       font-size: 0.75rem;
       padding: 4px 8px;
@@ -105,31 +104,66 @@
     .alert-warning { display: block; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid var(--warning); }
     .alert-danger { display: block; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid var(--danger); }
 
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .form-group { margin-bottom: 10px; }
-    label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
-    input, select { width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: var(--text); font-size: 0.9rem; outline: none; }
-    
-    button.btn-primary { background: var(--accent); color: var(--btn-text); font-weight: 600; border: none; border-radius: 8px; padding: 10px; width: 100%; cursor: pointer; }
-    button.btn-primary:active { opacity: 0.85; }
-
-    /* Кнопка чека */
-    .btn-receipt {
-      background: #f8fafc;
-      color: #0f172a;
-      font-weight: 700;
-      border: none;
-      border-radius: 8px;
-      padding: 12px;
-      width: 100%;
+    /* Быстрые чипы категорий */
+    .quick-chips-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .quick-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+      flex: 1;
+    }
+    .quick-chips::-webkit-scrollbar { display: none; }
+    .chip-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      color: var(--text);
       cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .chip-btn:active {
+      background: var(--accent);
+      color: var(--btn-text);
+      transform: scale(0.95);
+    }
+    .chip-add-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px dashed var(--accent);
+      color: var(--accent);
+      font-weight: 700;
+      border-radius: 16px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
-    .btn-receipt:active { transform: scale(0.98); opacity: 0.9; }
+    .chip-add-btn:active {
+      transform: scale(0.92);
+      background: var(--accent);
+      color: var(--btn-text);
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .form-group { margin-bottom: 10px; }
+    label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+    input { width: 100%; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; padding: 9px 10px; color: var(--text); font-size: 0.9rem; outline: none; }
+    
+    button.btn-primary { background: var(--accent); color: var(--btn-text); font-weight: 600; border: none; border-radius: 8px; padding: 10px; width: 100%; cursor: pointer; transition: opacity 0.15s; }
+    button.btn-primary:active { opacity: 0.85; }
 
     .btn-reset {
       background: transparent;
@@ -155,44 +189,6 @@
     .record-item:last-child { border-bottom: none; }
     .item-cat { font-size: 0.7rem; background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; margin-left: 6px; text-transform: uppercase; }
     .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; padding: 4px 8px; font-size: 1rem; }
-
-    /* Модальное окно предпросмотра чека */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      padding: 16px;
-    }
-    .modal-content {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      width: 100%;
-      max-width: 440px;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      padding: 16px;
-      gap: 12px;
-    }
-    .receipt-preview-container {
-      background: #334155;
-      padding: 12px;
-      border-radius: 8px;
-      overflow-y: auto;
-      display: flex;
-      justify-content: center;
-    }
-    .receipt-preview-container img {
-      max-width: 100%;
-      height: auto;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    }
   </style>
 </head>
 <body>
@@ -232,48 +228,32 @@
       </div>
     </div>
 
-    <!-- БЛОК ПЕЧАТИ ЧЕКА / ВЫГРУЗКИ КАРТИНКИ -->
+    <!-- Внесение расхода с быстрыми чипами и кнопкой добавления новых -->
     <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 10px;">🧾 Выгрузка чека для мини-принтера</h3>
-      
-      <div class="form-group">
-        <label>Диапазон дат отчёта:</label>
-        <select id="receiptPeriodSelect" onchange="toggleReceiptCustomRange()">
-          <option value="today">Сегодня</option>
-          <option value="current_month" selected>Выбранный месяц</option>
-          <option value="custom">Указать произвольные даты...</option>
-        </select>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h3 style="font-size: 1rem;">Внести расход</h3>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">Зажмите чип для удаления</span>
       </div>
 
-      <div class="form-row" id="receiptCustomRange" style="display: none;">
-        <div>
-          <label>С даты:</label>
-          <input type="date" id="receiptStartDate">
-        </div>
-        <div>
-          <label>По дату:</label>
-          <input type="date" id="receiptEndDate">
-        </div>
+      <!-- Лента чипов с плюсиком -->
+      <div class="quick-chips-wrapper">
+        <div class="quick-chips" id="chipsContainer"></div>
+        <button type="button" class="chip-add-btn" onclick="promptAddNewCategory()" title="Добавить новую категорию">+ Новая</button>
       </div>
 
-      <button type="button" class="btn-receipt" onclick="generateReceipt()">
-        🖨 Сформировать чек для печати
-      </button>
-    </div>
-
-    <!-- Внесение расхода -->
-    <div class="card">
-      <h3 style="font-size: 1rem; margin-bottom: 10px;">Внести расход</h3>
       <form id="expForm">
         <div class="form-row">
-          <div><label>Сумма (₽)</label><input type="number" id="expAmount" required min="1"></div>
+          <div>
+            <label>Сумма (₽) или калькулятор</label>
+            <input type="text" id="expAmount" placeholder="350 или 200+150" required inputmode="numeric">
+          </div>
           <div><label>Дата</label><input type="date" id="expDate" required></div>
         </div>
         <div class="form-row">
           <div><label>Категория</label><input list="catList" id="expCategory" placeholder="Выбор/своя" required></div>
-          <div><label>Описание</label><input type="text" id="expDesc" placeholder="Такси, кофе..." required></div>
+          <div><label>Описание</label><input type="text" id="expDesc" placeholder="Такси, кафе..." required></div>
         </div>
-        <datalist id="catList"><option value="Продукты"><option value="Жилье"><option value="Транспорт"><option value="Развлечения"><option value="Здоровье"></datalist>
+        <datalist id="catList"></datalist>
         <button type="submit" class="btn-primary" id="expBtn">Записать расход</button>
       </form>
     </div>
@@ -283,7 +263,7 @@
       <h3 style="font-size: 1rem; margin-bottom: 10px;">Внести доход / Зарплату</h3>
       <form id="incForm">
         <div class="form-row">
-          <div><label>Сумма (₽)</label><input type="number" id="incAmount" required min="1"></div>
+          <div><label>Сумма (₽)</label><input type="text" id="incAmount" placeholder="50000" required inputmode="numeric"></div>
           <div><label>Дата</label><input type="date" id="incDate" required></div>
         </div>
         <div class="form-group"><label>Источник</label><input type="text" id="incDesc" placeholder="Зарплата, аванс, бонус" required></div>
@@ -313,34 +293,44 @@
     </div>
   </div>
 
-  <!-- Модальное окно чека -->
-  <div class="modal-overlay" id="receiptModal">
-    <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <strong style="font-size: 1.05rem;">Предпросмотр чека</strong>
-        <span style="cursor: pointer; font-size: 1.3rem;" onclick="closeReceiptModal()">✕</span>
-      </div>
-      <div class="receipt-preview-container">
-        <img id="receiptImagePreview" alt="Чек">
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button type="button" class="btn-primary" onclick="downloadReceiptImage()">💾 Скачать PNG</button>
-        <button type="button" class="btn-primary" style="background: #334155; color: #fff;" onclick="closeReceiptModal()">Закрыть</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Скрытый холст генерации чека -->
-  <canvas id="receiptCanvas" style="display: none;"></canvas>
-
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbywEeQmKtOoZSOyjhcVnCtCQbXbH524I2xYs3PNusXUxHlH6Oo9HRakZ5HU4_bwid2WbQ/exec";
 
     const tg = window.Telegram?.WebApp;
-    if (tg) { tg.ready(); tg.expand(); }
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      try {
+        tg.setHeaderColor('#0f172a');
+        tg.setBackgroundColor('#0f172a');
+      } catch (e) {}
+    }
+
+    function hapticSuccess() {
+      try { tg?.HapticFeedback?.notificationOccurred('success'); } catch (e) {}
+    }
+    function hapticLight() {
+      try { tg?.HapticFeedback?.impactOccurred('light'); } catch (e) {}
+    }
+    function hapticWarning() {
+      try { tg?.HapticFeedback?.notificationOccurred('warning'); } catch (e) {}
+    }
 
     const todayStr = new Date().toISOString().slice(0, 10);
     const monthStr = todayStr.slice(0, 7);
+
+    // Начальные дефолтные категории
+    const DEFAULT_CATEGORIES = [
+      { name: "Продукты", icon: "🛒" },
+      { name: "Кофе", icon: "☕" },
+      { name: "Транспорт", icon: "🚕" },
+      { name: "Развлечения", icon: "🍔" },
+      { name: "Жилье", icon: "🏠" },
+      { name: "Здоровье", icon: "💊" }
+    ];
+
+    // Загрузка категорий из локального хранилища
+    let savedCategories = JSON.parse(localStorage.getItem('budget_custom_categories')) || DEFAULT_CATEGORIES;
 
     let state = {
       incomes: JSON.parse(localStorage.getItem('budget_cached_incomes')) || [],
@@ -357,13 +347,96 @@
     document.getElementById('selectedMonth').value = monthStr;
     document.getElementById('expDate').value = todayStr;
     document.getElementById('incDate').value = todayStr;
-    document.getElementById('receiptStartDate').value = todayStr;
-    document.getElementById('receiptEndDate').value = todayStr;
 
     let catChart = null;
     let trendChart = null;
-    let lastGeneratedDataUrl = "";
     const formatRub = (n) => new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽';
+
+    function evalAmountInput(val) {
+      if (!val) return 0;
+      const clean = String(val).replace(/,/g, '.').replace(/[^\d.+\-*/()]/g, '');
+      try {
+        const res = Function(`"use strict"; return (${clean})`)();
+        return isFinite(res) && res > 0 ? Math.round(res) : 0;
+      } catch (e) {
+        return Number(clean) || 0;
+      }
+    }
+
+    // Рендер чипов и обновление datalist
+    function renderCategoryChips() {
+      const container = document.getElementById('chipsContainer');
+      const datalist = document.getElementById('catList');
+
+      container.innerHTML = savedCategories.map((c, idx) => `
+        <button type="button" class="chip-btn" 
+          onclick="selectQuickChip('${c.name}')" 
+          oncontextmenu="handleDeleteCategory(event, ${idx})"
+          ontouchstart="handleTouchStart(event, ${idx})"
+          ontouchend="handleTouchEnd()">
+          ${c.icon ? c.icon + ' ' : ''}${c.name}
+        </button>
+      `).join('');
+
+      datalist.innerHTML = savedCategories.map(c => `<option value="${c.name}">`).join('');
+    }
+
+    // Добавление новой категории плюсиком
+    function promptAddNewCategory() {
+      hapticLight();
+      const rawName = prompt("Введите название новой категории (например: Спорт, Подписки, Подарки):");
+      if (!rawName) return;
+
+      const trimmed = rawName.trim();
+      if (!trimmed) return;
+
+      // Проверка на дубликат
+      if (savedCategories.some(c => c.name.toLowerCase() === trimmed.toLowerCase())) {
+        alert("Такая категория уже есть!");
+        return;
+      }
+
+      // Выбираем эмодзи или ставим дефолтный тег
+      savedCategories.push({ name: trimmed, icon: "🏷" });
+      localStorage.setItem('budget_custom_categories', JSON.stringify(savedCategories));
+      renderCategoryChips();
+      selectQuickChip(trimmed);
+      hapticSuccess();
+    }
+
+    // Удаление категории
+    let touchTimer = null;
+    function handleTouchStart(e, idx) {
+      touchTimer = setTimeout(() => {
+        deleteCategoryPrompt(idx);
+      }, 700);
+    }
+    function handleTouchEnd() {
+      if (touchTimer) clearTimeout(touchTimer);
+    }
+    function handleDeleteCategory(e, idx) {
+      e.preventDefault();
+      deleteCategoryPrompt(idx);
+    }
+    function deleteCategoryPrompt(idx) {
+      hapticWarning();
+      const cat = savedCategories[idx];
+      if (confirm(`Удалить категорию «${cat.name}» из быстрых чипов?`)) {
+        savedCategories.splice(idx, 1);
+        localStorage.setItem('budget_custom_categories', JSON.stringify(savedCategories));
+        renderCategoryChips();
+      }
+    }
+
+    function selectQuickChip(category) {
+      hapticLight();
+      document.getElementById('expCategory').value = category;
+      const descInput = document.getElementById('expDesc');
+      if (!descInput.value) {
+        descInput.value = category;
+      }
+      document.getElementById('expAmount').focus();
+    }
 
     function setSyncStatus(type) {
       const el = document.getElementById('syncStatus');
@@ -410,17 +483,20 @@
           syncQueue.shift();
           saveLocalCache();
         } catch (err) {
+          console.error("Сетевая ошибка при отправке:", err);
           setSyncStatus('error');
           isSyncing = false;
           syncTimer = setTimeout(flushSyncQueue, 5000);
           return;
         }
       }
+
       isSyncing = false;
       setSyncStatus('synced');
     }
 
     function saveStartBalance() {
+      hapticLight();
       const val = Number(document.getElementById('startBalanceInput').value) || 0;
       state.startBalances[state.selectedMonth] = val;
       localStorage.setItem('budget_start_balances', JSON.stringify(state.startBalances));
@@ -520,22 +596,31 @@
     }
 
     window.deleteRecord = async function(type, index) {
+      hapticWarning();
       if (!confirm('Удалить эту операцию?')) return;
+
       state[type].splice(index, 1);
       saveLocalCache();
       updateUI();
+
       syncQueue.push({ action: "delete_item", type, index });
       saveLocalCache();
       scheduleSync();
     };
 
     async function confirmResetAll() {
-      if (!confirm("ВНИМАНИЕ!\nСтереть все доходы, расходы и суммы? Действие необратимо.")) return;
+      hapticWarning();
+      const confirmed = confirm("ВНИМАНИЕ!\nВы уверены, что хотите полностью стереть все доходы, расходы и сохраненные начальные суммы?\nЭто действие нельзя отменить.");
+      if (!confirmed) return;
+
       state.incomes = [];
       state.expenses = [];
       state.startBalances = {};
       syncQueue = [];
-      localStorage.clear();
+      localStorage.removeItem('budget_cached_incomes');
+      localStorage.removeItem('budget_cached_expenses');
+      localStorage.removeItem('budget_start_balances');
+      localStorage.removeItem('budget_sync_queue');
       updateUI();
 
       setSyncStatus('syncing');
@@ -546,6 +631,7 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" }
         });
         setSyncStatus('synced');
+        hapticSuccess();
         alert("Все данные успешно очищены.");
       } catch (err) {
         setSyncStatus('error');
@@ -591,13 +677,21 @@
     }
 
     document.getElementById('selectedMonth').addEventListener('change', (e) => {
+      hapticLight();
       state.selectedMonth = e.target.value;
       updateUI();
     });
 
     document.getElementById('expForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const amount = Number(document.getElementById('expAmount').value);
+      const rawAmount = document.getElementById('expAmount').value;
+      const amount = evalAmountInput(rawAmount);
+
+      if (!amount || amount <= 0) {
+        alert("Пожалуйста, введите корректную сумму");
+        return;
+      }
+
       const date = document.getElementById('expDate').value;
       const category = document.getElementById('expCategory').value;
       const desc = document.getElementById('expDesc').value;
@@ -605,6 +699,8 @@
       state.expenses.push({ amount, date, category, desc });
       saveLocalCache();
       updateUI();
+
+      hapticSuccess();
 
       document.getElementById('expAmount').value = '';
       document.getElementById('expDesc').value = '';
@@ -616,13 +712,22 @@
 
     document.getElementById('incForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const amount = Number(document.getElementById('incAmount').value);
+      const rawAmount = document.getElementById('incAmount').value;
+      const amount = evalAmountInput(rawAmount);
+
+      if (!amount || amount <= 0) {
+        alert("Пожалуйста, введите корректную сумму");
+        return;
+      }
+
       const date = document.getElementById('incDate').value;
       const desc = document.getElementById('incDesc').value;
 
       state.incomes.push({ amount, date, desc });
       saveLocalCache();
       updateUI();
+
+      hapticSuccess();
 
       document.getElementById('incAmount').value = '';
       document.getElementById('incDesc').value = '';
@@ -632,189 +737,12 @@
       scheduleSync();
     });
 
-    /* ==========================================================
-       ЛОГИКА ЧЕКА ДЛЯ МИНИ-ПРИНТЕРА (384px, Монохром, Кассовый вид)
-       ========================================================== */
-
-    function toggleReceiptCustomRange() {
-      const mode = document.getElementById('receiptPeriodSelect').value;
-      document.getElementById('receiptCustomRange').style.display = (mode === 'custom') ? 'grid' : 'none';
-    }
-
-    function getReceiptFilterRange() {
-      const mode = document.getElementById('receiptPeriodSelect').value;
-      if (mode === 'today') {
-        return { start: todayStr, end: todayStr, title: `За сегодня (${todayStr})` };
-      } else if (mode === 'current_month') {
-        const y = state.selectedMonth.split('-')[0];
-        const m = state.selectedMonth.split('-')[1];
-        const lastDay = new Date(y, m, 0).getDate();
-        return {
-          start: `${state.selectedMonth}-01`,
-          end: `${state.selectedMonth}-${lastDay}`,
-          title: `За месяц: ${state.selectedMonth}`
-        };
-      } else {
-        const start = document.getElementById('receiptStartDate').value || todayStr;
-        const end = document.getElementById('receiptEndDate').value || todayStr;
-        return { start, end, title: `Период: ${start} — ${end}` };
-      }
-    }
-
-    function generateReceipt() {
-      const range = getReceiptFilterRange();
-      const filterFn = (item) => item.date >= range.start && item.date <= range.end;
-
-      const matchedExp = state.expenses.filter(filterFn).sort((a,b) => a.date.localeCompare(b.date));
-      const matchedInc = state.incomes.filter(filterFn).sort((a,b) => a.date.localeCompare(b.date));
-
-      const totalExp = matchedExp.reduce((s, e) => s + e.amount, 0);
-      const totalInc = matchedInc.reduce((s, i) => s + i.amount, 0);
-      const net = totalInc - totalExp;
-
-      // 384 px - стандартная ширина термоленты 58 мм
-      const canvasWidth = 384;
-      const pad = 14;
-      const contentWidth = canvasWidth - (pad * 2);
-
-      // Рассчитываем высоту динамически
-      let estimatedHeight = 250; // Шапка + разделители + подвал
-      estimatedHeight += (matchedExp.length * 40);
-      if (matchedExp.length > 0) estimatedHeight += 40;
-      estimatedHeight += (matchedInc.length * 40);
-      if (matchedInc.length > 0) estimatedHeight += 40;
-      estimatedHeight += 120; // Итоги
-
-      const canvas = document.getElementById('receiptCanvas');
-      canvas.width = canvasWidth;
-      canvas.height = estimatedHeight;
-      const ctx = canvas.getContext('2d');
-
-      // Чисто белый фон для четкой термопечати
-      ctx.fillStyle = '#FFFFFF';
-      ctx.fillRect(0, 0, canvasWidth, estimatedHeight);
-
-      // Глубокий черный цвет
-      ctx.fillStyle = '#000000';
-      ctx.textBaseline = 'top';
-
-      let y = 16;
-
-      function drawLine() {
-        ctx.font = '12px "Courier New", Courier, monospace';
-        ctx.fillText('------------------------------------------', pad, y);
-        y += 18;
-      }
-
-      function drawDoubleLine() {
-        ctx.font = '12px "Courier New", Courier, monospace';
-        ctx.fillText('==========================================', pad, y);
-        y += 18;
-      }
-
-      function drawCenterText(text, size = 16, bold = true) {
-        ctx.font = `${bold ? 'bold ' : ''}${size}px "Courier New", Courier, monospace`;
-        const textWidth = ctx.measureText(text).width;
-        const x = (canvasWidth - textWidth) / 2;
-        ctx.fillText(text, x, y);
-        y += size + 6;
-      }
-
-      function drawRow(leftText, rightText, size = 13, bold = false) {
-        ctx.font = `${bold ? 'bold ' : ''}${size}px "Courier New", Courier, monospace`;
-        ctx.fillText(leftText, pad, y);
-        const rightWidth = ctx.measureText(rightText).width;
-        ctx.fillText(rightText, canvasWidth - pad - rightWidth, y);
-        y += size + 5;
-      }
-
-      // 1. Шапка чека
-      drawCenterText('* ФИНАНСОВЫЙ ОТЧЁТ *', 17, true);
-      drawCenterText('БЮДЖЕТ & УЧЁТ', 13, false);
-      y += 4;
-      drawLine();
-
-      // Мета-информация
-      drawRow('ПЕРИОД:', range.title, 11, true);
-      const printDate = new Date().toLocaleString('ru-RU');
-      drawRow('СОЗДАН:', printDate, 11, false);
-      drawLine();
-
-      // 2. Расходы
-      if (matchedExp.length > 0) {
-        drawCenterText('-- РАСХОДЫ --', 13, true);
-        y += 2;
-        matchedExp.forEach((e) => {
-          const descClean = e.desc.length > 20 ? e.desc.slice(0, 19) + '…' : e.desc;
-          drawRow(descClean, `-${formatRub(e.amount)}`, 13, true);
-          drawRow(` [${e.category}] ${e.date.slice(5)}`, '', 11, false);
-          y += 2;
-        });
-        drawLine();
-      }
-
-      // 3. Доходы
-      if (matchedInc.length > 0) {
-        drawCenterText('-- ДОХОДЫ --', 13, true);
-        y += 2;
-        matchedInc.forEach((i) => {
-          const descClean = i.desc.length > 20 ? i.desc.slice(0, 19) + '…' : i.desc;
-          drawRow(descClean, `+${formatRub(i.amount)}`, 13, true);
-          drawRow(` ${i.date.slice(5)}`, '', 11, false);
-          y += 2;
-        });
-        drawLine();
-      }
-
-      if (matchedExp.length === 0 && matchedInc.length === 0) {
-        drawCenterText('(Нет операций за период)', 12, false);
-        drawLine();
-      }
-
-      // 4. Итоги
-      drawRow('ИТОГО ДОХОДЫ:', `+${formatRub(totalInc)}`, 13, true);
-      drawRow('ИТОГО РАСХОДЫ:', `-${formatRub(totalExp)}`, 13, true);
-      drawDoubleLine();
-
-      const deltaSign = net >= 0 ? '+' : '';
-      drawRow('ЧИСТЫЙ ИТОГ:', `${deltaSign}${formatRub(net)}`, 16, true);
-      drawRow('СТАТУС:', net >= 0 ? '[В ПЛЮСЕ]' : '[В МИНУСЕ]', 12, true);
-      y += 8;
-
-      // 5. Псевдо-штрихкод чекового аппарата
-      drawCenterText('||| | ||||| || |||| ||| |||| |', 15, false);
-      drawCenterText('СПАСИБО ЗА УЧЁТ!', 11, false);
-      y += 16;
-
-      // Обрезаем холст до реальной занятой высоты
-      const finalCanvas = document.createElement('canvas');
-      finalCanvas.width = canvasWidth;
-      finalCanvas.height = y;
-      const finalCtx = finalCanvas.getContext('2d');
-      finalCtx.drawImage(canvas, 0, 0);
-
-      lastGeneratedDataUrl = finalCanvas.toDataURL('image/png');
-      document.getElementById('receiptImagePreview').src = lastGeneratedDataUrl;
-      document.getElementById('receiptModal').style.display = 'flex';
-    }
-
-    function closeReceiptModal() {
-      document.getElementById('receiptModal').style.display = 'none';
-    }
-
-    function downloadReceiptImage() {
-      if (!lastGeneratedDataUrl) return;
-      const link = document.createElement('a');
-      link.download = `receipt_${todayStr}.png`;
-      link.href = lastGeneratedDataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    // Инициализация
+    // Инициализация интерфейса
+    renderCategoryChips();
     updateUI();
-    if (syncQueue.length > 0) scheduleSync();
+    if (syncQueue.length > 0) {
+      scheduleSync();
+    }
     loadData();
   </script>
 </body>
