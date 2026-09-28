@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Бюджет, Цели & Лимиты</title>
+  <title>Бюджет & Аналитика</title>
   <!-- Telegram WebApp SDK & Chart.js -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,7 +25,7 @@
     body { background-color: var(--bg); color: var(--text); padding: 12px; padding-bottom: 30px; }
     .container { max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
 
-    /* Мобильный таб-бар */
+    /* Таб-бар */
     .tab-bar {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -62,10 +62,11 @@
 
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
 
-    /* Панель периода и статуса сети */
     .month-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .month-controls { display: flex; align-items: center; gap: 8px; }
-    .month-bar input[type="month"] { background: rgba(0,0,0,0.25); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; outline: none; font-size: 0.9rem; }
+    .month-bar input[type="month"], input[type="date"], select {
+      background: rgba(0,0,0,0.25); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; outline: none; font-size: 0.9rem;
+    }
 
     .sync-status {
       font-size: 0.75rem;
@@ -79,7 +80,7 @@
       gap: 4px;
     }
 
-    /* Главный блок капитала */
+    /* Баланс */
     .total-balance-box {
       background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(30, 41, 59, 0.7) 100%);
       border: 1px solid rgba(56, 189, 248, 0.3);
@@ -134,7 +135,7 @@
     .alert-warning { display: block; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid var(--warning); }
     .alert-danger { display: block; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid var(--danger); }
 
-    /* Горизонтальный скролл чипов */
+    /* Чипы категорий */
     .quick-chips-wrapper { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
     .quick-chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; flex: 1; }
     .quick-chips::-webkit-scrollbar { display: none; }
@@ -161,23 +162,41 @@
       white-space: nowrap;
     }
 
-    /* Блок быстрых регулярных платежей */
+    /* Шаблоны регулярных платежей */
     .template-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
     .template-scroll::-webkit-scrollbar { display: none; }
     .template-card {
+      position: relative;
       flex: 0 0 auto;
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 10px 12px;
+      padding: 10px 14px;
       min-width: 125px;
       cursor: pointer;
     }
     .template-card:active { transform: scale(0.96); background: rgba(56, 189, 248, 0.1); }
     .template-title { font-size: 0.82rem; font-weight: 600; margin-bottom: 2px; }
     .template-amount { font-size: 0.95rem; font-weight: 700; color: #f87171; }
+    .template-del-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 22px;
+      height: 22px;
+      background: var(--danger);
+      color: #fff;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 800;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+    .edit-mode .template-del-badge { display: flex; }
 
-    /* Прогресс-бары целей и лимитов */
+    /* Цели и лимиты */
     .goal-card, .limit-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--border);
@@ -187,6 +206,23 @@
     }
     .bar-bg { background: rgba(0,0,0,0.3); border-radius: 10px; height: 8px; width: 100%; overflow: hidden; margin: 8px 0; }
     .bar-fill { height: 100%; border-radius: 10px; transition: width 0.3s ease; }
+
+    /* Кнопка вызова печати чека */
+    .btn-receipt {
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-receipt:active { transform: scale(0.98); opacity: 0.9; }
 
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
     .form-group { margin-bottom: 10px; }
@@ -206,12 +242,52 @@
 
     .tab-content { display: none; }
     .tab-content.active { display: flex; flex-direction: column; gap: 12px; }
+
+    /* Модальное окно предпросмотра термочека */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+    }
+    .receipt-preview-container {
+      background: #334155;
+      padding: 12px;
+      border-radius: 10px;
+      overflow-y: auto;
+      display: flex;
+      justify-content: center;
+    }
+    .receipt-preview-container img {
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      user-select: auto;
+      -webkit-user-select: auto;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     
-    <!-- Мобильная панель переключения разделов -->
+    <!-- Навигация -->
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('tab-main', this)">💳 Учёт</button>
       <button class="tab-btn" onclick="switchTab('tab-goals', this)">🎯 Цели & Лимиты</button>
@@ -250,15 +326,21 @@
           <div class="metric-card"><div class="metric-title">Доходы за месяц</div><div class="metric-value text-green" id="dispIncome">0 ₽</div></div>
           <div class="metric-card"><div class="metric-title">Траты за месяц</div><div class="metric-value text-red" id="dispExpenses">0 ₽</div></div>
           <div class="metric-card"><div class="metric-title">Свободный остаток</div><div class="metric-value text-blue" id="dispBalance">0 ₽</div></div>
-          <div class="metric-card"><div class="metric-title">Расход %</div><div class="metric-value" id="dispPercent">0%</div></div>
+          <div class="metric-card"><div class="metric-title">В день в среднем</div><div class="metric-value" id="dispDailyBurn">0 ₽</div></div>
         </div>
       </div>
 
-      <!-- Быстрые регулярные автоплатежи -->
+      <!-- Регулярные автоплатежи с удалением -->
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h3 style="font-size: 0.95rem;">⚡ Регулярные платежи (в 1 тап)</h3>
-          <button type="button" class="chip-add-btn" onclick="promptAddTemplate()">+ Шаблон</button>
+          <div>
+            <h3 style="font-size: 0.95rem;">⚡ Регулярные платежи</h3>
+            <span style="font-size: 0.7rem; color: var(--text-muted);">Тап — применить, зажать — удалить</span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="chip-add-btn" id="toggleEditTplBtn" onclick="toggleEditTemplates()">✏️ Режим</button>
+            <button type="button" class="chip-add-btn" onclick="promptAddTemplate()">+ Новый</button>
+          </div>
         </div>
         <div class="template-scroll" id="templateScroll"></div>
       </div>
@@ -310,7 +392,6 @@
     <!-- ==================== ТАБ 2: ЦЕЛИ И ЛИМИТЫ ==================== -->
     <div id="tab-goals" class="tab-content">
       
-      <!-- Лимиты по категориям -->
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <div>
@@ -322,7 +403,6 @@
         <div id="limitsListContainer"></div>
       </div>
 
-      <!-- Финансовые копилки / цели -->
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <div>
@@ -336,25 +416,54 @@
 
     </div>
 
-    <!-- ==================== ТАБ 3: АНАЛИТИКА И ИСТОРИЯ ==================== -->
+    <!-- ==================== ТАБ 3: АНАЛИТИКА, ГРАФИКИ, ЧЕК ==================== -->
     <div id="tab-analytics" class="tab-content">
       
+      <!-- Фильтр диапазона дат аналитики -->
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h3 style="font-size: 0.95rem;">📅 Диапазон дат</h3>
+          <select id="analyticsMode" onchange="toggleAnalyticsMode()" style="padding: 4px 8px;">
+            <option value="month" selected>Текущий месяц</option>
+            <option value="custom">Свой отрезок</option>
+          </select>
+        </div>
+
+        <div class="form-row" id="customDateRangeRow" style="display: none; margin-top: 8px;">
+          <div><label>От:</label><input type="date" id="rangeStart" onchange="updateUI()"></div>
+          <div><label>До:</label><input type="date" id="rangeEnd" onchange="updateUI()"></div>
+        </div>
+      </div>
+
+      <!-- Кнопка формирования чека с инфографикой -->
+      <div class="card">
+        <button type="button" class="btn-receipt" onclick="generateReceiptWithInfographics()">
+          🧾 Сформировать чек с инфографикой (58 мм)
+        </button>
+      </div>
+
+      <!-- Столбчатый график ежедневных трат -->
+      <div class="card">
+        <h3 style="font-size: 0.95rem; margin-bottom: 4px;">Ежедневные расходы (₽)</h3>
+        <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 6px;">Нажмите на столбик для просмотра суммы</div>
+        <div class="chart-box"><canvas id="dailyBarChart"></canvas></div>
+      </div>
+
+      <!-- Круговая диаграмма -->
       <div class="card">
         <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Структура расходов</h3>
         <div class="chart-box"><canvas id="catChart"></canvas></div>
       </div>
 
+      <!-- Линейная динамика -->
       <div class="card">
-        <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Динамика и тенденции</h3>
+        <h3 style="font-size: 0.95rem; margin-bottom: 6px;">Динамика по месяцам</h3>
         <div class="chart-box"><canvas id="trendChart"></canvas></div>
       </div>
 
       <!-- История с поиском -->
       <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h3 style="font-size: 0.95rem;">Операции за месяц</h3>
-          <span style="font-size: 0.75rem; color: var(--text-muted);" id="opsCount">0 шт</span>
-        </div>
+        <h3 style="font-size: 0.95rem; margin-bottom: 8px;">История операций</h3>
         <input type="text" id="searchOpsInput" placeholder="🔍 Поиск по названию или категории..." oninput="filterOperationsList()">
         <ul class="item-list" id="operationsList">Загрузка данных...</ul>
       </div>
@@ -368,6 +477,31 @@
     </div>
 
   </div>
+
+  <!-- Модальное окно предпросмотра чека -->
+  <div class="modal-overlay" id="receiptModal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <strong style="font-size: 1.05rem;">Чек с инфографикой</strong>
+        <span style="cursor: pointer; font-size: 1.3rem;" onclick="closeReceiptModal()">✕</span>
+      </div>
+
+      <p style="font-size: 0.75rem; color: var(--text-muted); text-align: center;">
+        💡 Зажмите картинку пальцем на смартфоне, чтобы сохранить в Фото или отправить на печать.
+      </p>
+
+      <div class="receipt-preview-container">
+        <img id="receiptImagePreview" alt="Термочек">
+      </div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn-primary" onclick="downloadReceiptImage()">💾 Скачать PNG</button>
+        <button type="button" class="btn-primary" style="background: #334155; color: #fff;" onclick="closeReceiptModal()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="receiptCanvas" style="display: none;"></canvas>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbywEeQmKtOoZSOyjhcVnCtCQbXbH524I2xYs3PNusXUxHlH6Oo9HRakZ5HU4_bwid2WbQ/exec";
@@ -386,7 +520,6 @@
     function hapticLight() { try { tg?.HapticFeedback?.impactOccurred('light'); } catch (e) {} }
     function hapticWarning() { try { tg?.HapticFeedback?.notificationOccurred('warning'); } catch (e) {} }
 
-    // Переключение табов
     function switchTab(tabId, btn) {
       hapticLight();
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -398,7 +531,13 @@
     const todayStr = new Date().toISOString().slice(0, 10);
     const monthStr = todayStr.slice(0, 7);
 
-    // Категории
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    const twoWeeksAgoStr = twoWeeksAgo.toISOString().slice(0, 10);
+
+    document.getElementById('rangeStart').value = twoWeeksAgoStr;
+    document.getElementById('rangeEnd').value = todayStr;
+
     const DEFAULT_CATEGORIES = [
       { name: "Продукты", icon: "🛒" },
       { name: "Кофе", icon: "☕" },
@@ -409,18 +548,15 @@
     ];
     let savedCategories = JSON.parse(localStorage.getItem('budget_custom_categories')) || DEFAULT_CATEGORIES;
 
-    // Регулярные автоплатежи-шаблоны
     const DEFAULT_TEMPLATES = [
       { desc: "Интернет", amount: 650, category: "Жилье" },
       { desc: "Подписка", amount: 299, category: "Развлечения" },
       { desc: "Проездной", amount: 1500, category: "Транспорт" }
     ];
     let savedTemplates = JSON.parse(localStorage.getItem('budget_templates')) || DEFAULT_TEMPLATES;
+    let isEditingTemplates = false;
 
-    // Лимиты по категориям: { "Развлечения": 15000, "Продукты": 20000 }
     let savedLimits = JSON.parse(localStorage.getItem('budget_category_limits')) || {};
-
-    // Цели/копилки: [ { title: "Новый ноутбук", target: 90000, current: 25000 } ]
     let savedGoals = JSON.parse(localStorage.getItem('budget_saving_goals')) || [
       { title: "Подушка безопасности", target: 100000, current: 35000 }
     ];
@@ -443,6 +579,9 @@
 
     let catChart = null;
     let trendChart = null;
+    let dailyBarChart = null;
+    let lastGeneratedDataUrl = "";
+
     const formatRub = (n) => new Intl.NumberFormat('ru-RU').format(Math.round(n)) + ' ₽';
 
     function evalAmountInput(val) {
@@ -456,7 +595,7 @@
       }
     }
 
-    // ================= РЕНДЕР ЧИПОВ И КАТЕГОРИЙ =================
+    // ================= КАТЕГОРИИ =================
     function renderCategoryChips() {
       const container = document.getElementById('chipsContainer');
       const datalist = document.getElementById('catList');
@@ -476,7 +615,7 @@
 
     function promptAddNewCategory() {
       hapticLight();
-      const rawName = prompt("Название новой категории (например: Спорт, Одежда):");
+      const rawName = prompt("Название новой категории:");
       if (!rawName) return;
       const trimmed = rawName.trim();
       if (!trimmed) return;
@@ -513,15 +652,54 @@
       document.getElementById('expAmount').focus();
     }
 
-    // ================= РЕГУЛЯРНЫЕ ШАБЛОНЫ В 1 ТАП =================
+    // ================= ШАБЛОНЫ АВТОПЛАТЕЖЕЙ =================
     function renderTemplates() {
       const el = document.getElementById('templateScroll');
+      el.className = isEditingTemplates ? "template-scroll edit-mode" : "template-scroll";
+
       el.innerHTML = savedTemplates.map((t, idx) => `
-        <div class="template-card" onclick="applyTemplate(${idx})">
+        <div class="template-card" onclick="handleTemplateClick(${idx})" oncontextmenu="handleTemplateContext(event, ${idx})">
+          <div class="template-del-badge" onclick="deleteTemplate(event, ${idx})">✕</div>
           <div class="template-title">${t.desc}</div>
           <div class="template-amount">-${formatRub(t.amount)}</div>
         </div>
       `).join('');
+    }
+
+    function toggleEditTemplates() {
+      hapticLight();
+      isEditingTemplates = !isEditingTemplates;
+      document.getElementById('toggleEditTplBtn').textContent = isEditingTemplates ? "Готово" : "✏️ Режим";
+      renderTemplates();
+    }
+
+    function handleTemplateClick(idx) {
+      if (isEditingTemplates) {
+        deleteTemplatePrompt(idx);
+        return;
+      }
+      applyTemplate(idx);
+    }
+
+    function handleTemplateContext(e, idx) {
+      e.preventDefault();
+      deleteTemplatePrompt(idx);
+    }
+
+    function deleteTemplate(e, idx) {
+      e.stopPropagation();
+      deleteTemplatePrompt(idx);
+    }
+
+    function deleteTemplatePrompt(idx) {
+      hapticWarning();
+      const t = savedTemplates[idx];
+      if (confirm(`Удалить постоянный платёж «${t.desc}» (${formatRub(t.amount)})?`)) {
+        savedTemplates.splice(idx, 1);
+        localStorage.setItem('budget_templates', JSON.stringify(savedTemplates));
+        renderTemplates();
+        hapticSuccess();
+      }
     }
 
     function applyTemplate(idx) {
@@ -537,7 +715,7 @@
 
     function promptAddTemplate() {
       hapticLight();
-      const desc = prompt("Название автоплатежа (например: Зал, Spotify, Аренда):");
+      const desc = prompt("Название платежа (например: Зал, Spotify, Кредит):");
       if (!desc) return;
       const amountStr = prompt("Сумма (₽):");
       const amount = evalAmountInput(amountStr);
@@ -550,7 +728,32 @@
       hapticSuccess();
     }
 
-    // ================= ЛИМИТЫ ПО КАТЕГОРИЯМ =================
+    // ================= ДИАПАЗОН ДАТ АНАЛИТИКИ =================
+    function toggleAnalyticsMode() {
+      const mode = document.getElementById('analyticsMode').value;
+      document.getElementById('customDateRangeRow').style.display = (mode === 'custom') ? 'grid' : 'none';
+      updateUI();
+    }
+
+    function getAnalyticsDateRange() {
+      const mode = document.getElementById('analyticsMode').value;
+      if (mode === 'custom') {
+        const start = document.getElementById('rangeStart').value || twoWeeksAgoStr;
+        const end = document.getElementById('rangeEnd').value || todayStr;
+        return { start, end, title: `${start} — ${end}` };
+      } else {
+        const y = state.selectedMonth.split('-')[0];
+        const m = state.selectedMonth.split('-')[1];
+        const lastDay = new Date(y, m, 0).getDate();
+        return {
+          start: `${state.selectedMonth}-01`,
+          end: `${state.selectedMonth}-${lastDay}`,
+          title: `Месяц: ${state.selectedMonth}`
+        };
+      }
+    }
+
+    // ================= ЛИМИТЫ & ЦЕЛИ =================
     function renderLimits() {
       const container = document.getElementById('limitsListContainer');
       const monthExp = state.expenses.filter(e => e.date.startsWith(state.selectedMonth));
@@ -591,7 +794,7 @@
 
     function promptAddCategoryLimit() {
       hapticLight();
-      const cat = prompt("Введите категорию для установки лимита (например: Развлечения, Продукты):");
+      const cat = prompt("Категория для лимита (например: Развлечения, Продукты):");
       if (!cat) return;
       const amt = evalAmountInput(prompt(`Лимит на месяц для «${cat}» (₽):`));
       if (!amt || amt <= 0) return;
@@ -608,7 +811,6 @@
       renderLimits();
     }
 
-    // ================= ФИНАНСОВЫЕ ЦЕЛИ / КОПИЛКА =================
     function renderGoals() {
       const container = document.getElementById('goalsListContainer');
       if (savedGoals.length === 0) {
@@ -653,7 +855,7 @@
 
     function depositGoal(idx) {
       hapticLight();
-      const amt = evalAmountInput(prompt(`Сколько отложить в цель «${savedGoals[idx].title}» (₽)?`));
+      const amt = evalAmountInput(prompt(`Сколько отложить в «${savedGoals[idx].title}» (₽)?`));
       if (!amt || amt <= 0) return;
       savedGoals[idx].current += amt;
       localStorage.setItem('budget_saving_goals', JSON.stringify(savedGoals));
@@ -670,7 +872,7 @@
       }
     }
 
-    // ================= СЕТЬ И СОСТОЯНИЕ =================
+    // ================= СЕТЬ & СОСТОЯНИЕ =================
     function setSyncStatus(type) {
       const el = document.getElementById('syncStatus');
       if (type === 'synced') { el.innerHTML = '🟢 В облаке'; el.style.color = '#4ade80'; }
@@ -766,35 +968,114 @@
         badge.textContent = '0 ₽';
       }
 
-      const spentPercent = totalInc > 0 ? (totalExp / totalInc) * 100 : 0;
+      const daysPassed = Math.max(1, new Date().getDate());
+      const dailyBurn = totalExp / daysPassed;
+      document.getElementById('dispDailyBurn').textContent = formatRub(dailyBurn);
+
       document.getElementById('dispIncome').textContent = formatRub(totalInc);
       document.getElementById('dispExpenses').textContent = formatRub(totalExp);
       document.getElementById('dispBalance').textContent = formatRub(netMonth);
-      document.getElementById('dispPercent').textContent = Math.round(spentPercent) + '%';
 
       const alert = document.getElementById('budgetAlert');
       alert.className = 'alert-banner';
       if (totalInc > 0) {
+        const spentPercent = (totalExp / totalInc) * 100;
         if (totalExp >= totalInc) {
           alert.classList.add('alert-danger');
-          alert.textContent = `Внимание! Траты превысили доходы месяца на ${formatRub(totalExp - totalInc)}!`;
+          alert.textContent = `Траты превысили доходы месяца на ${formatRub(totalExp - totalInc)}!`;
         } else if (spentPercent >= 80) {
           alert.classList.add('alert-warning');
-          alert.textContent = `Осторожно! Израсходовано ${Math.round(spentPercent)}% доходов за месяц!`;
+          alert.textContent = `Израсходовано ${Math.round(spentPercent)}% доходов за месяц!`;
         }
       }
 
       filterOperationsList();
-      renderCharts(expenses);
+      renderAnalyticsCharts();
       renderLimits();
       renderGoals();
     }
 
-    // ================= ПОИСК И СПИСОК ОПЕРАЦИЙ =================
+    // ================= ГРАФИКИ АНАЛИТИКИ =================
+    function renderAnalyticsCharts() {
+      const range = getAnalyticsDateRange();
+      const filteredExp = state.expenses.filter(e => e.date >= range.start && e.date <= range.end);
+
+      // 1. Ежедневные траты
+      const dailyMap = {};
+      filteredExp.forEach(e => dailyMap[e.date] = (dailyMap[e.date] || 0) + e.amount);
+      const sortedDays = Object.keys(dailyMap).sort();
+
+      const ctxDaily = document.getElementById('dailyBarChart').getContext('2d');
+      if (dailyBarChart) dailyBarChart.destroy();
+      dailyBarChart = new Chart(ctxDaily, {
+        type: 'bar',
+        data: {
+          labels: sortedDays.map(d => d.slice(5)),
+          datasets: [{
+            label: 'Расход (₽)',
+            data: sortedDays.map(d => dailyMap[d]),
+            backgroundColor: '#38bdf8',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: '#94a3b8', font: { size: 10 } } },
+            y: { ticks: { color: '#94a3b8', font: { size: 10 } } }
+          }
+        }
+      });
+
+      // 2. Круговая диаграмма
+      const catTotals = {};
+      filteredExp.forEach(e => catTotals[e.category] = (catTotals[e.category] || 0) + e.amount);
+      const ctxCat = document.getElementById('catChart').getContext('2d');
+      if (catChart) catChart.destroy();
+      catChart = new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(catTotals),
+          datasets: [{ data: Object.values(catTotals), backgroundColor: ['#38bdf8', '#f43f5e', '#10b981', '#f59e0b', '#a855f7', '#6366f1'] }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } }
+        }
+      });
+
+      // 3. Динамика по месяцам
+      const allMonths = [...new Set([...state.incomes.map(i => i.date.slice(0,7)), ...state.expenses.map(e => e.date.slice(0,7))])].sort();
+      const incData = allMonths.map(m => state.incomes.filter(i => i.date.startsWith(m)).reduce((s,i) => s + i.amount, 0));
+      const expData = allMonths.map(m => state.expenses.filter(e => e.date.startsWith(m)).reduce((s,e) => s + e.amount, 0));
+
+      const ctxTrend = document.getElementById('trendChart').getContext('2d');
+      if (trendChart) trendChart.destroy();
+      trendChart = new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+          labels: allMonths,
+          datasets: [
+            { label: 'Доход', data: incData, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', tension: 0.25 },
+            { label: 'Расход', data: expData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.25 }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } },
+          plugins: { legend: { labels: { color: '#94a3b8' } } }
+        }
+      });
+    }
+
+    // ================= СПИСОК ОПЕРАЦИЙ =================
     function filterOperationsList() {
       const expenses = state.expenses.filter(e => e.date.startsWith(state.selectedMonth));
       const incomes = state.incomes.filter(i => i.date.startsWith(state.selectedMonth));
-
       const query = (document.getElementById('searchOpsInput')?.value || '').toLowerCase().trim();
 
       let allOps = [
@@ -809,7 +1090,6 @@
         );
       }
 
-      document.getElementById('opsCount').textContent = `${allOps.length} шт`;
       const list = document.getElementById('operationsList');
       if (allOps.length === 0) {
         list.innerHTML = `<li style="color:var(--text-muted); text-align:center; padding:12px;">Операции не найдены</li>`;
@@ -844,6 +1124,223 @@
       scheduleSync();
     };
 
+    // ================= ГЕНЕРАЦИЯ ЧЕКА С ИНФОГРАФИКОЙ (384px) =================
+    function generateReceiptWithInfographics() {
+      hapticLight();
+      const range = getAnalyticsDateRange();
+      const filterFn = (item) => item.date >= range.start && item.date <= range.end;
+
+      const matchedExp = state.expenses.filter(filterFn).sort((a,b) => a.date.localeCompare(b.date));
+      const matchedInc = state.incomes.filter(filterFn).sort((a,b) => a.date.localeCompare(b.date));
+
+      const totalExp = matchedExp.reduce((s, e) => s + e.amount, 0);
+      const totalInc = matchedInc.reduce((s, i) => s + i.amount, 0);
+      const net = totalInc - totalExp;
+
+      // Группировка по категориям
+      const catTotals = {};
+      matchedExp.forEach(e => catTotals[e.category] = (catTotals[e.category] || 0) + e.amount);
+      const sortedCats = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
+
+      // Группировка по дням для графика
+      const dailyTotals = {};
+      matchedExp.forEach(e => dailyTotals[e.date] = (dailyTotals[e.date] || 0) + e.amount);
+      const days = Object.keys(dailyTotals).sort();
+
+      const canvasWidth = 384; // 58 мм ширина термоленты
+      const pad = 14;
+      const contentWidth = canvasWidth - (pad * 2);
+
+      let estimatedHeight = 320;
+      estimatedHeight += (matchedExp.length * 38);
+      estimatedHeight += (matchedInc.length * 38);
+      if (sortedCats.length > 0) estimatedHeight += (sortedCats.length * 36) + 40;
+      if (days.length > 1) estimatedHeight += 160;
+
+      const canvas = document.getElementById('receiptCanvas');
+      canvas.width = canvasWidth;
+      canvas.height = estimatedHeight;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(0, 0, canvasWidth, estimatedHeight);
+      ctx.fillStyle = '#000000';
+      ctx.textBaseline = 'top';
+
+      let y = 16;
+
+      function drawLine() {
+        ctx.font = '12px "Courier New", Courier, monospace';
+        ctx.fillText('------------------------------------------', pad, y);
+        y += 18;
+      }
+
+      function drawDoubleLine() {
+        ctx.font = '12px "Courier New", Courier, monospace';
+        ctx.fillText('==========================================', pad, y);
+        y += 18;
+      }
+
+      function drawCenterText(text, size = 16, bold = true) {
+        ctx.font = `${bold ? 'bold ' : ''}${size}px "Courier New", Courier, monospace`;
+        const textWidth = ctx.measureText(text).width;
+        ctx.fillText(text, (canvasWidth - textWidth) / 2, y);
+        y += size + 6;
+      }
+
+      function drawRow(leftText, rightText, size = 13, bold = false) {
+        ctx.font = `${bold ? 'bold ' : ''}${size}px "Courier New", Courier, monospace`;
+        ctx.fillText(leftText, pad, y);
+        const rightWidth = ctx.measureText(rightText).width;
+        ctx.fillText(rightText, canvasWidth - pad - rightWidth, y);
+        y += size + 5;
+      }
+
+      // Шапка
+      drawCenterText('* ФИНАНСОВЫЙ ОТЧЁТ *', 17, true);
+      drawCenterText('БЮДЖЕТ & УЧЁТ', 13, false);
+      drawLine();
+
+      drawRow('ПЕРИОД:', range.title, 11, true);
+      drawRow('СОЗДАН:', new Date().toLocaleString('ru-RU'), 11, false);
+      drawLine();
+
+      // 1. Инфографика категорий (термо-шкалы)
+      if (sortedCats.length > 0 && totalExp > 0) {
+        drawCenterText('[ СТРУКТУРА ТРАТ ПО КАТЕГОРИЯМ ]', 12, true);
+        y += 4;
+        sortedCats.forEach(([cat, amount]) => {
+          const pct = Math.round((amount / totalExp) * 100);
+          drawRow(cat.toUpperCase(), `${formatRub(amount)} (${pct}%)`, 11, true);
+
+          ctx.strokeRect(pad, y, contentWidth, 8);
+          const fillWidth = Math.max(2, Math.round((contentWidth - 2) * (pct / 100)));
+          ctx.fillRect(pad + 1, y + 1, fillWidth, 6);
+          y += 16;
+        });
+        drawLine();
+      }
+
+      // 2. Инфографика динамики (столбцы расходов)
+      if (days.length > 1) {
+        drawCenterText('[ ГРАФИК ДИНАМИКИ ТРАТ ]', 12, true);
+        y += 6;
+        const chartHeight = 70;
+        const maxVal = Math.max(...Object.values(dailyTotals));
+        const chartY = y;
+
+        ctx.fillRect(pad, chartY + chartHeight, contentWidth, 2);
+
+        const slotW = contentWidth / days.length;
+        const barW = Math.max(4, Math.floor(slotW * 0.65));
+
+        days.forEach((d, idx) => {
+          const val = dailyTotals[d];
+          const h = maxVal > 0 ? Math.round((val / maxVal) * (chartHeight - 12)) : 0;
+          const bx = pad + (idx * slotW) + (slotW - barW) / 2;
+          const by = chartY + chartHeight - h;
+
+          ctx.fillRect(bx, by, barW, h);
+
+          if (days.length <= 7 || idx === 0 || idx === days.length - 1 || idx % Math.ceil(days.length / 5) === 0) {
+            ctx.font = '9px "Courier New", monospace';
+            ctx.fillText(d.slice(8), bx, chartY + chartHeight + 4);
+          }
+        });
+
+        y += chartHeight + 22;
+        drawLine();
+      }
+
+      // Список расходов
+      if (matchedExp.length > 0) {
+        drawCenterText('-- СПИСОК РАСХОДОВ --', 12, true);
+        y += 2;
+        matchedExp.forEach(e => {
+          const descClean = e.desc.length > 20 ? e.desc.slice(0, 19) + '…' : e.desc;
+          drawRow(descClean, `-${formatRub(e.amount)}`, 13, true);
+          drawRow(` [${e.category}] ${e.date.slice(5)}`, '', 11, false);
+          y += 2;
+        });
+        drawLine();
+      }
+
+      // Список доходов
+      if (matchedInc.length > 0) {
+        drawCenterText('-- СПИСОК ДОХОДОВ --', 12, true);
+        y += 2;
+        matchedInc.forEach(i => {
+          const descClean = i.desc.length > 20 ? i.desc.slice(0, 19) + '…' : i.desc;
+          drawRow(descClean, `+${formatRub(i.amount)}`, 13, true);
+          drawRow(` ${i.date.slice(5)}`, '', 11, false);
+          y += 2;
+        });
+        drawLine();
+      }
+
+      if (matchedExp.length === 0 && matchedInc.length === 0) {
+        drawCenterText('(Нет операций за выбранный отрезок)', 12, false);
+        drawLine();
+      }
+
+      // Итоги
+      drawRow('ИТОГО ДОХОДЫ:', `+${formatRub(totalInc)}`, 13, true);
+      drawRow('ИТОГО РАСХОДЫ:', `-${formatRub(totalExp)}`, 13, true);
+      drawDoubleLine();
+
+      const deltaSign = net >= 0 ? '+' : '';
+      drawRow('ЧИСТЫЙ ИТОГ:', `${deltaSign}${formatRub(net)}`, 16, true);
+      drawRow('СТАТУС:', net >= 0 ? '[В ПЛЮСЕ]' : '[В МИНУСЕ]', 12, true);
+      y += 8;
+
+      drawCenterText('||| | ||||| || |||| ||| |||| |', 15, false);
+      drawCenterText('СПАСИБО ЗА УЧЁТ!', 11, false);
+      y += 16;
+
+      // Обрезка до реального размера
+      const finalCanvas = document.createElement('canvas');
+      finalCanvas.width = canvasWidth;
+      finalCanvas.height = y;
+      const finalCtx = finalCanvas.getContext('2d');
+      finalCtx.drawImage(canvas, 0, 0);
+
+      lastGeneratedDataUrl = finalCanvas.toDataURL('image/png');
+      document.getElementById('receiptImagePreview').src = lastGeneratedDataUrl;
+      document.getElementById('receiptModal').style.display = 'flex';
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').style.display = 'none';
+    }
+
+    function downloadReceiptImage() {
+      if (!lastGeneratedDataUrl) return;
+      const fileName = `receipt_${todayStr}.png`;
+
+      try {
+        const arr = lastGeneratedDataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) u8arr[n] = bstr.charCodeAt(n);
+        const blob = new Blob([u8arr], { type: mime });
+        const blobUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = blobUrl;
+        link.download = fileName;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+      } catch (e) {
+        alert("Зажмите чек пальцем и сохраните его в Галерею");
+      }
+    }
+
+    // ================= ПОЛНЫЙ СБРОС =================
     async function confirmResetAll() {
       hapticWarning();
       if (!confirm("ВНИМАНИЕ!\nСтереть все доходы, расходы и суммы? Действие необратимо.")) return;
@@ -867,44 +1364,6 @@
       } catch (err) {
         setSyncStatus('error');
       }
-    }
-
-    function renderCharts(monthExpenses) {
-      const catTotals = {};
-      monthExpenses.forEach(e => catTotals[e.category] = (catTotals[e.category] || 0) + e.amount);
-      const ctx1 = document.getElementById('catChart').getContext('2d');
-      if (catChart) catChart.destroy();
-      catChart = new Chart(ctx1, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(catTotals),
-          datasets: [{ data: Object.values(catTotals), backgroundColor: ['#38bdf8', '#f43f5e', '#10b981', '#f59e0b', '#a855f7', '#6366f1'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } } }
-      });
-
-      const allMonths = [...new Set([...state.incomes.map(i => i.date.slice(0,7)), ...state.expenses.map(e => e.date.slice(0,7))])].sort();
-      const incData = allMonths.map(m => state.incomes.filter(i => i.date.startsWith(m)).reduce((s,i) => s + i.amount, 0));
-      const expData = allMonths.map(m => state.expenses.filter(e => e.date.startsWith(m)).reduce((s,e) => s + e.amount, 0));
-
-      const ctx2 = document.getElementById('trendChart').getContext('2d');
-      if (trendChart) trendChart.destroy();
-      trendChart = new Chart(ctx2, {
-        type: 'line',
-        data: {
-          labels: allMonths,
-          datasets: [
-            { label: 'Доход', data: incData, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', tension: 0.25 },
-            { label: 'Расход', data: expData, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.25 }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } },
-          plugins: { legend: { labels: { color: '#94a3b8' } } }
-        }
-      });
     }
 
     document.getElementById('selectedMonth').addEventListener('change', (e) => {
@@ -934,7 +1393,7 @@
       hapticSuccess();
       document.getElementById('expAmount').value = '';
       document.getElementById('expDesc').value = '';
-      document.activeElement.blur(); // Скрываем мобильную клавиатуру
+      document.activeElement.blur();
 
       syncQueue.push({ action: "add_expense", amount, date, category, desc });
       saveLocalCache();
